@@ -60,3 +60,10 @@ fastlane/report.xml
 fastlane/Preview.html
 fastlane/screenshots/**/*.png
 fastlane/test_output
+
+.claude
+.claude-flow
+CLAUDE.md
+.swarm
+ruvector.db
+.DS_Store
