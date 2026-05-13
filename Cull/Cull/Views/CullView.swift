@@ -2,8 +2,10 @@ import SwiftUI
 import Photos
 
 struct CullView: View {
+    let filter: SessionFilter
     @EnvironmentObject var viewModel: CullViewModel
     @EnvironmentObject var photoService: PhotoLibraryService
+    @EnvironmentObject var historyService: ReviewHistoryService
     @State private var dragOffset: CGSize = .zero
 
     var body: some View {
@@ -25,7 +27,7 @@ struct CullView: View {
                 Text("No photos found").foregroundStyle(.secondary)
             }
         }
-        .navigationTitle("Cull")
+        .navigationTitle(filter.displayTitle)
         .navigationBarTitleDisplayMode(.inline)
         .toolbar {
             if !viewModel.isLoading && !viewModel.isComplete {
@@ -37,10 +39,8 @@ struct CullView: View {
                 }
             }
         }
-        .task {
-            if viewModel.photos.isEmpty {
-                await viewModel.loadPhotos(using: photoService)
-            }
+        .task(id: filter) {
+            await viewModel.loadPhotos(using: photoService, history: historyService, filter: filter)
         }
     }
 

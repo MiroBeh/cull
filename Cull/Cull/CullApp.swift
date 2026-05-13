@@ -11,12 +11,14 @@ import SwiftUI
 struct CullApp: App {
     @StateObject private var photoService = PhotoLibraryService()
     @StateObject private var viewModel = CullViewModel()
+    @StateObject private var historyService = ReviewHistoryService()
 
     var body: some Scene {
         WindowGroup {
             ContentView()
                 .environmentObject(photoService)
                 .environmentObject(viewModel)
+                .environmentObject(historyService)
         }
     }
 }

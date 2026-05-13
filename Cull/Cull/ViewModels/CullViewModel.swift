@@ -18,6 +18,8 @@ class CullViewModel: ObservableObject {
     @Published var showSummary: Bool = false
     @Published var error: Error? = nil
 
+    private var historyService: ReviewHistoryService?
+
     var currentPhoto: Photo? {
         guard currentIndex < photos.count else { return nil }
         return photos[currentIndex]
@@ -31,10 +33,14 @@ class CullViewModel: ObservableObject {
         !photos.isEmpty && currentIndex >= photos.count
     }
 
-    func loadPhotos(using service: PhotoLibraryService) async {
+    func loadPhotos(using service: PhotoLibraryService, history: ReviewHistoryService, filter: SessionFilter) async {
+        self.historyService = history
         isLoading = true
-        photos = await service.fetchPhotos()
+        photos = await service.fetchPhotos(filter: filter, history: history)
         currentIndex = 0
+        toDelete = []
+        toKeep = []
+        undoStack = []
         isLoading = false
     }
 
@@ -42,6 +48,7 @@ class CullViewModel: ObservableObject {
         guard let photo = currentPhoto else { return }
         toKeep.append(photo)
         pushUndo(photo: photo, decision: .keep)
+        historyService?.markKept(photo.id)
         currentIndex += 1
         UIImpactFeedbackGenerator(style: .light).impactOccurred()
         checkCompletion()
@@ -61,8 +68,11 @@ class CullViewModel: ObservableObject {
         let last = undoStack.removeLast()
         currentIndex -= 1
         switch last.decision {
-        case .keep: toKeep.removeLast()
-        case .delete: toDelete.removeLast()
+        case .keep:
+            toKeep.removeLast()
+            historyService?.unmarkKept(last.photo.id)
+        case .delete:
+            toDelete.removeLast()
         }
     }
 
