@@ -1,6 +1,6 @@
 import SwiftUI
 
-enum CullOnboardTheme {
+enum CullTheme {
     private static func hex(_ hex: UInt32) -> Color {
         let r = Double((hex >> 16) & 0xFF) / 255.0
         let g = Double((hex >> 8) & 0xFF) / 255.0

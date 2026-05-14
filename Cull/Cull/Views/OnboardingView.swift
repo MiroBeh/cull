@@ -103,14 +103,14 @@ private struct StackIconView: View {
     var body: some View {
         ZStack {
             StackIconBack()
-                .stroke(CullOnboardTheme.text, lineWidth: 1.4 * (size / 80))
+                .stroke(CullTheme.text, lineWidth: 1.4 * (size / 80))
                 .opacity(0.35)
             StackIconMid()
-                .stroke(CullOnboardTheme.text, lineWidth: 1.4 * (size / 80))
+                .stroke(CullTheme.text, lineWidth: 1.4 * (size / 80))
                 .opacity(0.6)
             StackIconFront()
                 .stroke(
-                    CullOnboardTheme.text,
+                    CullTheme.text,
                     style: StrokeStyle(lineWidth: 1.4 * (size / 80), lineJoin: .round)
                 )
         }
@@ -123,7 +123,7 @@ private struct SwipeIconView: View {
     var body: some View {
         SwipeIconShape()
             .stroke(
-                CullOnboardTheme.text,
+                CullTheme.text,
                 style: StrokeStyle(lineWidth: 1.4 * (size / 80), lineCap: .round, lineJoin: .round)
             )
             .frame(width: size, height: size)
@@ -136,12 +136,12 @@ private struct SparkIconView: View {
         ZStack {
             SparkRaysShape()
                 .stroke(
-                    CullOnboardTheme.text,
+                    CullTheme.text,
                     style: StrokeStyle(lineWidth: 1.4 * (size / 80), lineCap: .round, lineJoin: .round)
                 )
                 .opacity(0.35)
             SparkCoreShape()
-                .fill(CullOnboardTheme.text)
+                .fill(CullTheme.text)
         }
         .frame(width: size, height: size)
     }
@@ -156,7 +156,7 @@ struct OnboardingView: View {
 
     var body: some View {
         ZStack {
-            CullOnboardTheme.bg.ignoresSafeArea()
+            CullTheme.bg.ignoresSafeArea()
             VStack(spacing: 0) {
                 switch step {
                 case 0:
@@ -175,7 +175,7 @@ struct OnboardingView: View {
                         eyebrow: "MECHANICS",
                         icon: AnyView(SwipeIconView(size: 56)),
                         title: "Swipe to decide.",
-                        body: "Right keeps. Left deletes. Down skips. Tap to inspect. Long-press to undo. Photos you keep are remembered for 90 days.",
+                        body: "Right keeps. Left deletes. Tap Undo to go back. Photos you keep are remembered for 90 days.",
                         ctaText: "Continue",
                         ctaTag: "→ 03",
                         showSkip: true,
@@ -214,12 +214,12 @@ struct OnboardingView: View {
             HStack {
                 Text(eyebrow)
                     .cullMono(size: 11, tracking: 0.22 * 11)
-                    .foregroundStyle(CullOnboardTheme.text3)
+                    .foregroundStyle(CullTheme.text3)
                     .textCase(.uppercase)
                 Spacer()
                 Text(String(format: "%02d / 03", step + 1))
                     .cullMono(size: 11, tracking: 0.22 * 11)
-                    .foregroundStyle(CullOnboardTheme.text3)
+                    .foregroundStyle(CullTheme.text3)
             }
             .padding(.horizontal, 24)
             .padding(.top, 14)
@@ -227,9 +227,9 @@ struct OnboardingView: View {
             VStack(alignment: .leading, spacing: 0) {
                 ZStack {
                     RoundedRectangle(cornerRadius: 24)
-                        .fill(CullOnboardTheme.surface)
+                        .fill(CullTheme.surface)
                     RoundedRectangle(cornerRadius: 24)
-                        .stroke(CullOnboardTheme.lineSolid, lineWidth: 1)
+                        .stroke(CullTheme.lineSolid, lineWidth: 1)
                     icon
                 }
                 .frame(width: 96, height: 96)
@@ -237,12 +237,12 @@ struct OnboardingView: View {
 
                 Text(title)
                     .cullSans(size: 34, weight: .medium, tracking: -0.025 * 34)
-                    .foregroundStyle(CullOnboardTheme.text)
+                    .foregroundStyle(CullTheme.text)
                     .lineSpacing(2)
 
                 Text(body)
                     .cullSans(size: 15)
-                    .foregroundStyle(CullOnboardTheme.text2)
+                    .foregroundStyle(CullTheme.text2)
                     .lineSpacing(6)
                     .frame(maxWidth: 320, alignment: .leading)
                     .padding(.top, 16)
@@ -275,10 +275,10 @@ struct OnboardingView: View {
                         Text(ctaTag)
                             .cullMono(size: 10, tracking: 0.14 * 10)
                     }
-                    .foregroundStyle(CullOnboardTheme.bg)
+                    .foregroundStyle(CullTheme.bg)
                     .padding(16)
                     .frame(maxWidth: .infinity)
-                    .background(isAmber ? CullOnboardTheme.amber : CullOnboardTheme.text)
+                    .background(isAmber ? CullTheme.amber : CullTheme.text)
                     .cornerRadius(14)
                 }
 
@@ -290,7 +290,7 @@ struct OnboardingView: View {
                     } label: {
                         Text("SKIP")
                             .cullMono(size: 10, tracking: 0.18 * 10)
-                            .foregroundStyle(CullOnboardTheme.text3)
+                            .foregroundStyle(CullTheme.text3)
                             .textCase(.uppercase)
                             .frame(maxWidth: .infinity)
                             .padding(.top, 6)
@@ -306,7 +306,7 @@ struct OnboardingView: View {
         HStack(spacing: 6) {
             ForEach(0..<3, id: \.self) { i in
                 Rectangle()
-                    .fill(i <= step ? CullOnboardTheme.text : CullOnboardTheme.surface2)
+                    .fill(i <= step ? CullTheme.text : CullTheme.surface2)
                     .frame(maxWidth: .infinity)
                     .frame(height: 3)
                     .cornerRadius(1.5)
