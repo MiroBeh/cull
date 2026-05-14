@@ -97,27 +97,20 @@ struct SettingsView: View {
                 settingsRow(
                     label: "Photos culled",
                     right: AnyView(
-                        Text("—")
+                        Text(historyService.photosCulled.formatted())
                             .font(.system(size: 14, weight: .medium, design: .monospaced))
                             .foregroundStyle(CullTheme.text)
+                            .monospacedDigit()
                     )
                 )
                 Hairline()
                 settingsRow(
                     label: "Storage freed",
                     right: AnyView(
-                        Text("—")
+                        Text(formatBytes(historyService.storageFreedBytes))
                             .font(.system(size: 14, weight: .medium, design: .monospaced))
                             .foregroundStyle(CullTheme.amber)
-                    )
-                )
-                Hairline()
-                settingsRow(
-                    label: "Time spent",
-                    right: AnyView(
-                        Text("—")
-                            .font(.system(size: 14, weight: .medium, design: .monospaced))
-                            .foregroundStyle(CullTheme.text2)
+                            .monospacedDigit()
                     )
                 )
             }
@@ -180,6 +173,14 @@ struct SettingsView: View {
         .padding(.horizontal, 16)
         .padding(.vertical, 13)
         .frame(minHeight: 46)
+    }
+
+    private func formatBytes(_ bytes: Int) -> String {
+        guard bytes > 0 else { return "0 MB" }
+        let gb = Double(bytes) / 1_073_741_824
+        if gb >= 1 { return String(format: "%.1f GB", gb) }
+        let mb = Double(bytes) / 1_048_576
+        return String(format: "%.0f MB", mb)
     }
 
     private func toggleRow(label: String, binding: Binding<Bool>) -> some View {

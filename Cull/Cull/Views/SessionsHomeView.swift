@@ -8,6 +8,9 @@ struct SessionsHomeView: View {
     @State private var isLoading: Bool = true
     @State private var showSettings: Bool = false
     @State private var showAlbumPicker: Bool = false
+    @State private var showAllMonths: Bool = false
+
+    private let monthsCollapsedLimit = 6
 
     private var unreviewedTotal: Int {
         buckets.reduce(0) { $0 + $1.unreviewedCount }
@@ -186,18 +189,57 @@ struct SessionsHomeView: View {
     }
 
     private var monthList: some View {
-        SurfaceGroup {
+        let canCollapse = buckets.count > monthsCollapsedLimit
+        let visible = (canCollapse && !showAllMonths)
+            ? Array(buckets.prefix(monthsCollapsedLimit))
+            : buckets
+        let hiddenCount = buckets.count - visible.count
+
+        return SurfaceGroup {
             VStack(spacing: 0) {
-                ForEach(Array(buckets.enumerated()), id: \.element.id) { index, bucket in
+                ForEach(Array(visible.enumerated()), id: \.element.id) { index, bucket in
                     bucketRow(bucket: bucket)
-                    if index < buckets.count - 1 {
+                    if index < visible.count - 1 {
                         Hairline()
                     }
+                }
+                if canCollapse {
+                    Hairline()
+                    expandRow(hiddenCount: hiddenCount)
                 }
             }
         }
         .padding(.horizontal, 16)
         .padding(.bottom, 16)
+    }
+
+    private func expandRow(hiddenCount: Int) -> some View {
+        Button {
+            withAnimation(.easeInOut(duration: 0.22)) {
+                showAllMonths.toggle()
+            }
+        } label: {
+            HStack(spacing: 6) {
+                Spacer()
+                MonoLabel(
+                    text: showAllMonths
+                        ? "SHOW FEWER"
+                        : "SHOW \(hiddenCount) MORE",
+                    size: 10,
+                    tracking: 0.22 * 10,
+                    color: CullTheme.text2
+                )
+                Image(systemName: showAllMonths ? "chevron.up" : "chevron.down")
+                    .font(.system(size: 10, weight: .medium))
+                    .foregroundStyle(CullTheme.text2)
+                Spacer()
+            }
+            .padding(.horizontal, 16)
+            .padding(.vertical, 14)
+            .frame(minHeight: 46)
+            .contentShape(Rectangle())
+        }
+        .buttonStyle(.plain)
     }
 
     private func bucketRow(bucket: MonthBucket) -> some View {

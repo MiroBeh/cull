@@ -1,6 +1,7 @@
 import SwiftUI
 import UIKit
 import Combine
+import Photos
 
 struct UndoEntry {
     let photo: Photo
@@ -86,7 +87,12 @@ class CullViewModel: ObservableObject {
 
     func confirmDeletion(using service: PhotoLibraryService) async {
         do {
-            try await service.deletePhotos(toDelete)
+            let deleted = toDelete
+            try await service.deletePhotos(deleted)
+            let bytes = deleted.reduce(0) { acc, p in
+                acc + Int(Double(p.asset.pixelWidth * p.asset.pixelHeight) * 3.0 / 10.0)
+            }
+            historyService?.recordDeletions(count: deleted.count, bytes: bytes)
             showConfirmation = false
             showSummary = true
         } catch {
