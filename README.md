@@ -46,6 +46,20 @@ Users are presented with their photos one at a time and make quick decisions via
 
 ---
 
+## Development
+
+```
+make doctor            # check the toolchain, signing and your phone
+make sim PHOTOS=40     # run in a simulator with 40 generated photos to swipe
+make install           # build and install on your iPhone (backs up first)
+```
+
+The scripts behind those targets live in `scripts/`; `docs/WORKFLOW.md` explains
+the three loops, the signing setup and what the device backups do and do not
+cover.
+
+---
+
 ## Tech Stack
 
 - **Platform:** iOS (iPhone-first, iPad later)

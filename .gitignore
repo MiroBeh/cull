@@ -67,3 +67,7 @@ CLAUDE.md
 .swarm
 ruvector.db
 .DS_Store
+# Build output and device backups from scripts/ (see docs/WORKFLOW.md)
+build/
+backups/
+scripts/local.env
