@@ -3,6 +3,7 @@ import Photos
 
 enum SessionFilter: Hashable {
     case all
+    case shuffle
     case month(year: Int, month: Int)
     case album(localId: String, title: String)
 
@@ -10,6 +11,8 @@ enum SessionFilter: Hashable {
         switch self {
         case .all:
             return "All Photos"
+        case .shuffle:
+            return "Shuffle"
         case .month(let y, let m):
             var comps = DateComponents()
             comps.year = y

@@ -1,0 +1,154 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>Cull — Redesign</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600&family=Geist+Mono:wght@400;500;600&display=swap" rel="stylesheet" />
+<style>
+  html, body { margin: 0; padding: 0; height: 100%; background: #f0eee9; }
+  * { box-sizing: border-box; }
+</style>
+</head>
+<body>
+<div id="root"></div>
+
+<script src="https://unpkg.com/react@18.3.1/umd/react.development.js" integrity="sha384-hD6/rw4ppMLGNu3tX5cjIb+uRZ7UkRJ6BPkLpg4hAu/6onKUg4lLsHAs9EBPT82L" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" integrity="sha384-u6aeetuaXnQ38mYT8rp6sbXaQe3NL9t+IBXmnYxwkUI2Hw4bsp2Wvmx4yRQF1uAm" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" integrity="sha384-m08KidiNqLdpJqLq95G/LEi8Qvjl/xUYll3QILypMoQ65QorJ9Lvtp2RXYGBFj1y" crossorigin="anonymous"></script>
+
+<script type="text/babel" src="design-canvas.jsx"></script>
+<script type="text/babel" src="ios-frame.jsx"></script>
+<script type="text/babel" src="tweaks-panel.jsx"></script>
+<script type="text/babel" src="screens.jsx"></script>
+<script type="text/babel" src="app-icons.jsx"></script>
+
+<script type="text/babel" data-presets="react">
+const PHONE_W = 390;
+const PHONE_H = 844;
+
+function Frame({ children }) {
+  return (
+    <IOSDevice width={PHONE_W} height={PHONE_H} dark={true}>
+      {children}
+    </IOSDevice>
+  );
+}
+
+function App() {
+  return (
+    <DesignCanvas>
+      <DCSection
+        id="core"
+        title="Core flow"
+        subtitle="The three screens that matter most: home, the swipe loop, and the finish line."
+      >
+        <DCArtboard id="home" label="Home — month list + recoverable storage" width={PHONE_W} height={PHONE_H}>
+          <Frame><ScreenHome /></Frame>
+        </DCArtboard>
+        <DCArtboard id="swipe-rest" label="Swipe — at rest" width={PHONE_W} height={PHONE_H}>
+          <Frame><ScreenSwipe tilt={0} /></Frame>
+        </DCArtboard>
+        <DCArtboard id="swipe-keep" label="Swipe — leaning KEEP" width={PHONE_W} height={PHONE_H}>
+          <Frame><ScreenSwipe tilt={60} /></Frame>
+        </DCArtboard>
+        <DCArtboard id="swipe-del" label="Swipe — leaning DELETE" width={PHONE_W} height={PHONE_H}>
+          <Frame><ScreenSwipe tilt={-60} /></Frame>
+        </DCArtboard>
+        <DCArtboard id="end" label="End-of-month summary" width={PHONE_W} height={PHONE_H}>
+          <Frame><ScreenEnd /></Frame>
+        </DCArtboard>
+      </DCSection>
+
+      <DCSection
+        id="onboarding"
+        title="Onboarding"
+        subtitle="Three slides. No marketing fluff — say what the app is, how it works, ask for permission."
+      >
+        <DCArtboard id="ob-1" label="01 · Identity" width={PHONE_W} height={PHONE_H}>
+          <Frame><ScreenOnboard step={1} /></Frame>
+        </DCArtboard>
+        <DCArtboard id="ob-2" label="02 · Mechanics" width={PHONE_W} height={PHONE_H}>
+          <Frame><ScreenOnboard step={2} /></Frame>
+        </DCArtboard>
+        <DCArtboard id="ob-3" label="03 · Permission" width={PHONE_W} height={PHONE_H}>
+          <Frame><ScreenOnboard step={3} /></Frame>
+        </DCArtboard>
+      </DCSection>
+
+      <DCSection
+        id="settings"
+        title="Settings"
+        subtitle="Same dense list system. Adds Lifetime stats — the long-tail reward."
+      >
+        <DCArtboard id="settings" label="Settings — full" width={PHONE_W} height={PHONE_H}>
+          <Frame><ScreenSettings /></Frame>
+        </DCArtboard>
+      </DCSection>
+
+      <DCSection
+        id="icons"
+        title="App icon"
+        subtitle="Six directions. Each is rendered as an iOS squircle and shown alongside a 60px home-screen-size proof."
+      >
+        {ICON_VARIANTS.map(v => (
+          <DCArtboard key={v.id} id={`icon-${v.id}`} label={v.label} width={240} height={340}>
+            <div style={{
+              width: 240, height: 340, padding: '20px 20px 22px',
+              background: '#fff',
+              display: 'flex', flexDirection: 'column', gap: 16,
+              fontFamily: '-apple-system, system-ui',
+            }}>
+              <AppIcon size={180} variant={v.variant} />
+              <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                <div style={{
+                  width: 60, height: 60,
+                  borderRadius: 60 * 0.224, overflow: 'hidden',
+                  boxShadow: '0 2px 6px rgba(0,0,0,0.15), 0 0 0 1px rgba(0,0,0,0.05)',
+                  flexShrink: 0,
+                }}>{v.variant(60)}</div>
+                <div style={{ fontSize: 11, lineHeight: 1.4, color: 'rgba(60,50,40,0.7)', textWrap: 'pretty' }}>
+                  {v.note}
+                </div>
+              </div>
+            </div>
+          </DCArtboard>
+        ))}
+      </DCSection>
+
+      <DCSection
+        id="notes"
+        title="Design notes"
+      >
+        <DCPostIt x={0} y={0}>
+          <b>System</b><br/><br/>
+          • Dark, near-black charcoal background (oklch 0.16)<br/>
+          • Single brand voice: <b>monospace numerals</b> everywhere — counts, sizes, dates<br/>
+          • Color is information: amber = storage, green = keep, red = delete, neutral = everything else<br/>
+          • Hairline dividers, dense list rows, big tabular numerals<br/>
+          • Geist + Geist Mono (Google Fonts)
+        </DCPostIt>
+        <DCPostIt x={280} y={0}>
+          <b>Home</b><br/><br/>
+          The hero is the <b>recoverable storage</b> stat — the reason users opened the app. Continue card resumes the current month inline. Month list is denser than the original: per-row progress bar, count, and bytes freed in one breath.
+        </DCPostIt>
+        <DCPostIt x={560} y={0}>
+          <b>Swipe</b><br/><br/>
+          Stacked deck (peek next two cards behind). Always-visible KEEP / DELETE rails on the edges that brighten as you drag. Photo tilts. Decision badge stamps onto the card past a threshold. Bottom dot-strip is a <b>history of decisions this session</b> — green dots for kept, red for deleted, fat dot is current position.
+        </DCPostIt>
+        <DCPostIt x={840} y={0}>
+          <b>End</b><br/><br/>
+          80px amber numeral is the dopamine hit. Below it: the receipt — kept/deleted/largest/avg in a 2×2 grid, plus a single-bar decision distribution. Primary CTA pushes you to the next month so you don't bounce.
+        </DCPostIt>
+      </DCSection>
+    </DesignCanvas>
+  );
+}
+
+ReactDOM.createRoot(document.getElementById('root')).render(<App />);
+</script>
+
+</body>
+</html>

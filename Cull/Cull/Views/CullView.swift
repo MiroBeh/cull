@@ -24,6 +24,7 @@ struct CullView: View {
     private var filterTitle: String {
         switch filter {
         case .all: return "All Photos"
+        case .shuffle: return "Shuffle"
         case .month(let y, let m):
             var c = DateComponents(); c.year = y; c.month = m
             guard let d = Calendar.current.date(from: c) else { return "Photos" }
@@ -35,6 +36,7 @@ struct CullView: View {
     private var filterSubtitle: String {
         switch filter {
         case .all: return ""
+        case .shuffle: return "RANDOM ORDER"
         case .month(let y, _): return "\(y)"
         case .album: return ""
         }

@@ -67,6 +67,7 @@ struct SessionsHomeView: View {
                         if let bucket = continueBucket {
                             continueCTA(bucket: bucket)
                         }
+                        shuffleCTA
                         byMonthHeader
                         monthList
                     }
@@ -171,10 +172,50 @@ struct SessionsHomeView: View {
             .padding(.vertical, 14)
         }
         .padding(.horizontal, 16)
-        .padding(.bottom, 22)
+        .padding(.bottom, 10)
         .contentShape(Rectangle())
         .onTapGesture {
             path.append(.month(year: bucket.year, month: bucket.month))
+        }
+    }
+
+    private var shuffleCTA: some View {
+        SurfaceGroup {
+            HStack(spacing: 14) {
+                ZStack {
+                    RoundedRectangle(cornerRadius: 10)
+                        .fill(CullTheme.surface2)
+                        .frame(width: 36, height: 36)
+                    Image(systemName: "shuffle")
+                        .font(.system(size: 14))
+                        .foregroundStyle(CullTheme.text)
+                }
+
+                VStack(alignment: .leading, spacing: 4) {
+                    Text("Shuffle all photos")
+                        .font(.system(size: 15, weight: .medium))
+                        .foregroundStyle(CullTheme.text)
+                    MonoLabel(
+                        text: "RANDOM ORDER · \(unreviewedTotal) UNREVIEWED",
+                        size: 10,
+                        tracking: 0.14 * 10,
+                        color: CullTheme.text3
+                    )
+                }
+                .frame(maxWidth: .infinity, alignment: .leading)
+
+                Image(systemName: "chevron.right")
+                    .font(.system(size: 12, weight: .regular))
+                    .foregroundStyle(CullTheme.text4)
+            }
+            .padding(.horizontal, 16)
+            .padding(.vertical, 14)
+        }
+        .padding(.horizontal, 16)
+        .padding(.bottom, 22)
+        .contentShape(Rectangle())
+        .onTapGesture {
+            path.append(.shuffle)
         }
     }
 

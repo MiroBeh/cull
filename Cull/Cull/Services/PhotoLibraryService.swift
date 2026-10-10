@@ -26,6 +26,24 @@ class PhotoLibraryService: ObservableObject {
                 photos.append(Photo(asset: asset))
             }
 
+        case .shuffle:
+            // Walk a shuffled index list over a lazy fetch result so we never
+            // materialize the whole library just to pick `limit` assets.
+            options.fetchLimit = 0
+            options.sortDescriptors = nil
+            options.predicate = NSPredicate(format: "mediaType == %d", PHAssetMediaType.image.rawValue)
+            let result = PHAsset.fetchAssets(with: options)
+            guard result.count > 0 else { return [] }
+            var indices = Array(0..<result.count)
+            indices.shuffle()
+            for index in indices {
+                let asset = result.object(at: index)
+                guard !history.isKept(asset.localIdentifier) else { continue }
+                photos.append(Photo(asset: asset))
+                if photos.count >= limit { break }
+            }
+            return photos
+
         case .month(let year, let month):
             let cal = Calendar.current
             var startComps = DateComponents()
