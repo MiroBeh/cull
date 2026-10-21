@@ -5,7 +5,7 @@ Three loops, in the order you reach for them:
 | Loop | Command | What it is for |
 |---|---|---|
 | Simulator | `scripts/sim.sh` | Iterating on a screen. Seeds a fake camera roll to swipe through. |
-| Tests | `scripts/test.sh` | The filtering and the counters. Seconds, no phone involved. |
+| Tests | `scripts/test.sh` | The session: batches, decisions, undo, the counters. Seconds, no phone involved. |
 | Phone | `scripts/device.sh install` | Living with it: your real library, your real storage. |
 
 `scripts/doctor.sh` checks everything the three depend on and says what to do
@@ -81,12 +81,12 @@ scripts/sim.sh --grant             # skip the permission prompt
 scripts/sim.sh --console           # keep the log attached
 ```
 
-A fresh simulator has an empty photo library, and Cull with nothing to swipe
-shows its empty state and nothing else — so `--photos N` generates N PNGs of
-varying size and colour and adds them with `simctl addmedia`. They are gradients,
-not photographs, which is enough for the card stack, the progress counter and
-the deletion flow; `--media` takes real files when you need to look at something
-truthful. Either way the images stay in the simulator's library until `--erase`,
+A fresh simulator has an empty photo library, and Cull with nothing to review
+says you are all caught up and nothing else — so `--photos N` generates N PNGs
+of varying size and colour and adds them with `simctl addmedia`. They are
+gradients, not photographs, which is enough for the swipe states, the progress
+line and the deletion flow; `--media` takes real files when you need to look at
+something truthful. Either way the images stay in the simulator's library until `--erase`,
 so you only seed once.
 
 `--grant` and `--revoke` exist because the permission prompt is part of the
@@ -171,18 +171,33 @@ Two things destroy them, and both are avoidable:
 
 ```
 scripts/test.sh
-scripts/test.sh --filter SessionFilterTests/lastSixMonths
+scripts/test.sh --filter SessionTests/undoTakesBackADeletion
+scripts/test.sh --clean
 ```
 
-There is no `CullTests` target in the project yet — the script says so and
-stops. Add one in Xcode (**File ▸ New ▸ Target ▸ Unit Testing Bundle**, named
-`CullTests`) and both the script and `make test` pick it up with no changes.
-The pieces worth covering first are the ones with no UI in them:
-`SessionFilter`, and `ReviewHistoryService`'s 90-day expiry of kept marks.
+The `CullTests` target holds one suite, `SessionTests`, and it drives the whole
+feature through `SessionViewModel`: a session is 50 photos (fewer when that is
+all that is left), keep and delete sort and advance, undo reverses a decision
+including the kept mark, completion lands exactly at the end of the batch,
+leaving early still deletes what was decided, declining the system prompt leaves
+the library and the counters alone, the freed figures agree with each other and
+add up across sessions, and kept photos stay out for 90 days and then come back.
+
+They run in a fraction of a second because none of them touch PhotoKit:
+`SessionViewModel` reaches the library only through the `PhotoSource` protocol,
+and the tests hand it `InMemoryPhotoLibrary` — an array of photos — plus a
+`ReviewHistoryService` with its own `UserDefaults` suite and its own clock, so
+the 90-day expiry is a variable rather than a wait.
+
+**What the tests do not cover:** the review UI, the drag thresholds, the share
+sheet and the system delete prompt. Those are the simulator loop's job, and the
+share sheet and the delete prompt want a real phone.
 
 The simulator for a test run is resolved at run time rather than pinned, so the
 same command works on a laptop and on a CI runner with different runtimes
-installed.
+installed. The scheme that `test` and `sim` use is shared
+(`Cull.xcodeproj/xcshareddata/xcschemes/Cull.xcscheme`), so a fresh clone gets
+the test action without opening Xcode first.
 
 ## When something breaks
 

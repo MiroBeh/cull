@@ -1,48 +1,44 @@
-# Cull – iOS Photo Management App
+# Cull — one button, fifty photos
 
-## Overview
+**Cull** is an iPhone app for getting rid of photos you do not want. It opens on
+a storage number and a single button. Pressing it starts a session of **50
+photos drawn at random from everything you have not reviewed** — about two
+minutes, with a visible end.
 
-**Cull** is an iOS app that helps users clean up and organize their photo library using an intuitive swipe-based interface inspired by Tinder. The name comes from the photography term "culling" — the process of sorting through photos to keep only the best ones.
+There is no month list, no album picker, no filter and no mode. Choosing between
+"March 2026" and "September 2025" is not a decision anyone has an opinion about,
+and the app does not make you make it.
 
 ---
 
-## Core Concept
+## The flow
 
-Users are presented with their photos one at a time and make quick decisions via swipe gestures:
-
-| Gesture | Action |
+| Screen | What is on it |
 |---|---|
-| Swipe Right | Keep the photo |
-| Swipe Left | Delete the photo |
-| Swipe Down *(planned)* | Move to a specific folder/album |
-| Swipe Up *(planned)* | Favorite / star the photo |
-| Tap | View photo in detail before deciding |
+| **Home** | How much storage your unreviewed photos could give back, and **Start cleaning**. Plus how much you have freed with Cull so far. |
+| **Review** | One photo, two large buttons — **Delete** and **Keep** — a thin "12 of 50" progress line, the photo's date and size, a quiet **Share** button, and Undo. |
+| **Done** | How many you deleted and how much space came back, then **Clean 50 more** or **Finish for today**. |
 
----
+**Deciding.** Tap Delete or Keep, or swipe the photo — left deletes, right
+keeps. They are the same action: as you drag, the card tilts and follows your
+finger, the decision stamps onto it past the commit point, the matching edge of
+the screen washes with colour and the matching button lights while the other
+dims. Let go short of the commit point and the card springs back, so a twitch
+cannot delete anything. Each decision gives a short haptic tap.
 
-## MVP Features (v1.0)
+**Sharing.** The Share button under the photo opens the **standard iOS share
+sheet** with the full-quality image, so a photo you had forgotten about can go
+to Messages, AirDrop, Mail or anywhere else — without leaving the session and
+without counting as a decision.
 
-- [ ] Display photos from the user's camera roll one at a time
-- [ ] Swipe right to keep a photo
-- [ ] Swipe left to mark a photo for deletion
-- [ ] Confirmation screen before permanently deleting marked photos
-- [ ] Progress indicator (e.g. "124 of 1,840 photos reviewed")
-- [ ] Session summary: how many kept vs. deleted, storage freed
-- [ ] Undo last swipe gesture
-- [ ] Onboarding flow explaining the swipe mechanics
+**Deleting.** Nothing leaves the library until the session ends, however it
+ends. Then iOS presents its own confirmation, and what you agreed to goes to
+**Recently Deleted**, recoverable for 30 days. Cull adds no confirmation screen
+of its own — asking twice is not more careful, it is just slower.
 
----
-
-## Planned Features (v1.1+)
-
-- [ ] Swipe down to move photo into a chosen album/folder
-- [ ] Swipe up to add photo to Favorites
-- [ ] Smart suggestions (e.g. duplicates, blurry photos, screenshots)
-- [ ] Filter by date range, album, or media type before culling session
-- [ ] Batch mode: review by event or date group
-- [ ] iCloud Photos support
-- [ ] Stats dashboard: storage freed over time
-- [ ] Customizable swipe actions
+**Remembering.** A photo you keep is left out of later sessions for 90 days,
+then comes round again. Settings shows the lifetime totals, how many photos are
+remembered, a reset, and a haptics toggle. Nothing else.
 
 ---
 
@@ -51,79 +47,53 @@ Users are presented with their photos one at a time and make quick decisions via
 ```
 make doctor            # check the toolchain, signing and your phone
 make sim PHOTOS=40     # run in a simulator with 40 generated photos to swipe
+make test              # run the unit tests
 make install           # build and install on your iPhone (backs up first)
 ```
 
 The scripts behind those targets live in `scripts/`; `docs/WORKFLOW.md` explains
-the three loops, the signing setup and what the device backups do and do not
-cover.
+the loops, the signing setup and what the device backups do and do not cover.
+`design/design-a.html` is the design source for the screens above.
 
 ---
 
-## Tech Stack
-
-- **Platform:** iOS (iPhone-first, iPad later)
-- **Language:** Swift
-- **UI Framework:** SwiftUI
-- **Photo Access:** PhotoKit (`PHPhotoLibrary`)
-- **Minimum iOS Version:** iOS 16+
-
----
-
-## Design Guidelines
-
-- **Tone:** Clean, minimal, satisfying
-- **Primary Action:** The swipe gesture should feel fluid and responsive with haptic feedback
-- **Color Palette:** Neutral background, green for keep, red for delete (consistent with user expectations)
-- **Typography:** System font (SF Pro) for native feel
-- **Animations:** Card stack effect, smooth swipe transitions
-
----
-
-## Project Structure (Suggested)
+## How it is put together
 
 ```
-Cull/
-├── App/
-│   └── CullApp.swift
-├── Views/
-│   ├── OnboardingView.swift
-│   ├── SwipeCardView.swift
-│   ├── SessionSummaryView.swift
-│   └── SettingsView.swift
-├── ViewModels/
-│   ├── PhotoSessionViewModel.swift
-│   └── LibraryViewModel.swift
+Cull/Cull/
+├── CullApp.swift            # wires the services and the session together
+├── ContentView.swift        # onboarding gate, then Home
 ├── Models/
-│   ├── Photo.swift
-│   └── SwipeDecision.swift
+│   ├── Photo.swift          # id, date, pixel count — no PhotoKit in the logic
+│   └── StorageEstimate.swift# the one place a photo's size is guessed at
 ├── Services/
+│   ├── PhotoSource.swift    # what a session needs from the library
 │   ├── PhotoLibraryService.swift
-│   └── DeletionService.swift
-└── Resources/
-    └── Assets.xcassets
+│   ├── ReviewHistoryService.swift
+│   └── Haptics.swift
+├── ViewModels/
+│   └── SessionViewModel.swift  # the whole feature: batch, decisions, deletion
+└── Views/                   # Home, Review, Done, Settings, Onboarding
+Cull/CullTests/              # the session, driven through an in-memory library
 ```
 
----
+`SessionViewModel` talks to the library only through `PhotoSource`, which is
+what lets the tests run a whole session — 50 decisions, undo, deletion, the
+90-day expiry — without PhotoKit, a simulator or a phone.
 
-## Permissions Required
-
-- `NSPhotoLibraryUsageDescription` – to read photos
-- `NSPhotoLibraryAddUsageDescription` – to modify/delete photos
-
----
-
-## App Store Metadata (Draft)
-
-- **App Name:** Cull
-- **Subtitle:** Swipe to clean your photos
-- **Category:** Photo & Video / Productivity
-- **Keywords:** photo cleaner, delete photos, swipe, organize, storage, photo manager
+A photo's size on disk is not something PhotoKit will tell us without reading
+the file, so every "freed" figure in the app is an estimate from
+`StorageEstimate`. They are consistent with each other and will not match what
+iOS Settings reports.
 
 ---
 
-## Notes
+## Tech
 
-- Deleted photos should go to iOS "Recently Deleted" album first (standard PhotoKit behavior), giving users a 30-day safety net
-- Never permanently delete without explicit user confirmation
-- Session state should be saved so users can pause and resume a culling session
+- **Platform:** iPhone, portrait
+- **Language:** Swift, SwiftUI
+- **Photo access:** PhotoKit (`PHPhotoLibrary`), read-write
+- **Permissions:** `NSPhotoLibraryUsageDescription`, `NSPhotoLibraryAddUsageDescription`
+- **Palette:** charcoal `#1A1B1F`, bone `#F4F3EF`, amber `#E3BF6F` for storage,
+  green `#5FCF8A` for keep, red `#E47668` for delete. Sentence-case sans for
+  anything you read; monospace for the big storage numeral and tabular figures.

@@ -1,6 +1,9 @@
 import Foundation
 import Combine
 
+/// Remembers which photos the user said "keep" to, so a later session does not
+/// offer them again — for 90 days, after which a photo is worth reconsidering.
+/// Also keeps the lifetime counters the home and settings screens show.
 class ReviewHistoryService: ObservableObject {
     @Published private(set) var keptCount: Int = 0
     @Published private(set) var photosCulled: Int = 0
@@ -10,24 +13,30 @@ class ReviewHistoryService: ObservableObject {
     private let photosCulledKey = "cull.lifetime.photosCulled"
     private let storageFreedKey = "cull.lifetime.storageFreedBytes"
     private let ttl: TimeInterval = 90 * 24 * 60 * 60
+    private let defaults: UserDefaults
+    private let now: () -> Date
     private var entries: [String: Date] = [:]
 
-    init() {
+    /// `defaults` and `now` are injected so the tests can run against their own
+    /// storage and step over the 90-day expiry without waiting for it.
+    init(defaults: UserDefaults = .standard, now: @escaping () -> Date = Date.init) {
+        self.defaults = defaults
+        self.now = now
         load()
         pruneExpired()
-        photosCulled = UserDefaults.standard.integer(forKey: photosCulledKey)
-        storageFreedBytes = UserDefaults.standard.integer(forKey: storageFreedKey)
+        photosCulled = defaults.integer(forKey: photosCulledKey)
+        storageFreedBytes = defaults.integer(forKey: storageFreedKey)
     }
 
     func recordDeletions(count: Int, bytes: Int) {
         photosCulled += count
         storageFreedBytes += bytes
-        UserDefaults.standard.set(photosCulled, forKey: photosCulledKey)
-        UserDefaults.standard.set(storageFreedBytes, forKey: storageFreedKey)
+        defaults.set(photosCulled, forKey: photosCulledKey)
+        defaults.set(storageFreedBytes, forKey: storageFreedKey)
     }
 
     func markKept(_ id: String) {
-        entries[id] = Date()
+        entries[id] = now()
         persist()
         keptCount = entries.count
     }
@@ -40,17 +49,13 @@ class ReviewHistoryService: ObservableObject {
 
     func isKept(_ id: String) -> Bool {
         guard let keptAt = entries[id] else { return false }
-        return Date().timeIntervalSince(keptAt) < ttl
-    }
-
-    func filterUnreviewed(_ photos: [Photo]) -> [Photo] {
-        photos.filter { !isKept($0.id) }
+        return now().timeIntervalSince(keptAt) < ttl
     }
 
     func pruneExpired() {
-        let now = Date()
+        let moment = now()
         entries = entries.filter { _, keptAt in
-            now.timeIntervalSince(keptAt) < ttl
+            moment.timeIntervalSince(keptAt) < ttl
         }
         persist()
         keptCount = entries.count
@@ -62,12 +67,12 @@ class ReviewHistoryService: ObservableObject {
         keptCount = 0
         photosCulled = 0
         storageFreedBytes = 0
-        UserDefaults.standard.removeObject(forKey: photosCulledKey)
-        UserDefaults.standard.removeObject(forKey: storageFreedKey)
+        defaults.removeObject(forKey: photosCulledKey)
+        defaults.removeObject(forKey: storageFreedKey)
     }
 
     private func load() {
-        guard let data = UserDefaults.standard.data(forKey: userDefaultsKey) else { return }
+        guard let data = defaults.data(forKey: userDefaultsKey) else { return }
         if let decoded = try? JSONDecoder().decode([String: TimeInterval].self, from: data) {
             entries = decoded.mapValues { Date(timeIntervalSince1970: $0) }
             keptCount = entries.count
@@ -77,7 +82,7 @@ class ReviewHistoryService: ObservableObject {
     private func persist() {
         let encoded = entries.mapValues { $0.timeIntervalSince1970 }
         if let data = try? JSONEncoder().encode(encoded) {
-            UserDefaults.standard.set(data, forKey: userDefaultsKey)
+            defaults.set(data, forKey: userDefaultsKey)
         }
     }
 }
