@@ -7,7 +7,6 @@ import UIKit
 struct HomeView: View {
     @EnvironmentObject var photoService: PhotoLibraryService
     @EnvironmentObject var historyService: ReviewHistoryService
-    @EnvironmentObject var session: SessionViewModel
     @Environment(\.scenePhase) private var scenePhase
 
     @State private var unreviewed: Int?
@@ -74,7 +73,7 @@ struct HomeView: View {
     }
 
     private func ready(unreviewed: Int) -> some View {
-        let recoverable = StorageEstimate.split(StorageEstimate.bytes(forPhotoCount: unreviewed))
+        let recoverable = StorageEstimate.valueAndUnit(StorageEstimate.bytes(forPhotoCount: unreviewed))
 
         return VStack(alignment: .leading, spacing: 0) {
             Spacer()

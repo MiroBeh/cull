@@ -9,8 +9,8 @@
 # pinned "iPhone 17, OS 26.5" is the single most common reason a green pipeline
 # turns red on someone else's machine.
 #
-# Cull has no test target yet; this stops with a note saying how to add one
-# rather than failing somewhere inside xcodebuild.
+# The CullTests bundle holds the session tests; if the target is ever missing,
+# this stops with a note rather than failing somewhere inside xcodebuild.
 
 source "$(dirname "${BASH_SOURCE[0]}")/lib.sh"
 

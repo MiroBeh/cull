@@ -12,7 +12,7 @@ struct ReviewView: View {
     /// of this it springs back, so a twitch cannot delete a photo.
     private static let commitDistance: CGFloat = 110
 
-    @State private var drag: CGFloat = 0
+    @State private var dragX: CGFloat = 0
     @State private var isLeaving = false
 
     private static let dateFmt: DateFormatter = {
@@ -59,25 +59,25 @@ struct ReviewView: View {
     // MARK: - The drag
 
     private var pending: SwipeDecision? {
-        guard abs(drag) >= Self.commitDistance else { return nil }
-        return drag > 0 ? .keep : .delete
+        guard abs(dragX) >= Self.commitDistance else { return nil }
+        return dragX > 0 ? .keep : .delete
     }
 
     /// 0 at rest, 1 at the commit point.
     private var dragProgress: Double {
-        min(1, abs(drag) / Self.commitDistance)
+        min(1, abs(dragX) / Self.commitDistance)
     }
 
     private var leaning: SwipeDecision? {
-        guard abs(drag) > 6 else { return nil }
-        return drag > 0 ? .keep : .delete
+        guard abs(dragX) > 6 else { return nil }
+        return dragX > 0 ? .keep : .delete
     }
 
     private var swipe: some Gesture {
         DragGesture()
             .onChanged { value in
                 guard !isLeaving else { return }
-                drag = value.translation.width
+                dragX = value.translation.width
             }
             .onEnded { value in
                 guard !isLeaving else { return }
@@ -89,7 +89,7 @@ struct ReviewView: View {
                 } else if travelled <= -commit || predicted <= -commit {
                     decide(.delete)
                 } else {
-                    withAnimation(.spring(response: 0.3, dampingFraction: 0.72)) { drag = 0 }
+                    withAnimation(.spring(response: 0.3, dampingFraction: 0.72)) { dragX = 0 }
                 }
             }
     }
@@ -100,15 +100,18 @@ struct ReviewView: View {
         guard !isLeaving else { return }
         isLeaving = true
         withAnimation(.easeOut(duration: 0.2)) {
-            drag = decision == .keep ? 720 : -720
+            dragX = decision == .keep ? 720 : -720
         }
         Task {
             try? await Task.sleep(nanoseconds: 200_000_000)
+            // The card is off screen by now. Advance first and re-centre in the
+            // same pass — re-centring first would flash the photo that was just
+            // decided back into the middle of the screen.
             switch decision {
             case .keep: await session.keep()
             case .delete: await session.delete()
             }
-            drag = 0
+            dragX = 0
             isLeaving = false
         }
     }
@@ -131,7 +134,14 @@ struct ReviewView: View {
                 // The prototype never shows a way out of a session; starting 50
                 // photos by accident has to be survivable, so this stays.
                 Button {
-                    Task { await session.endEarly() }
+                    // Nothing decided yet means nothing to report and nothing
+                    // to delete: someone who pressed Start by accident should
+                    // just be let out.
+                    if session.hasDecisions {
+                        Task { await session.endEarly() }
+                    } else {
+                        dismiss()
+                    }
                 } label: {
                     Image(systemName: "xmark")
                         .font(.system(size: 13, weight: .medium))
@@ -169,9 +179,9 @@ struct ReviewView: View {
                 PhotoCardView(photo: photo)
                     .clipShape(RoundedRectangle(cornerRadius: 24))
                     .overlay(stamp)
-                    .shadow(color: .black.opacity(abs(drag) > 6 ? 0.5 : 0.3), radius: 28, y: 16)
-                    .offset(x: drag)
-                    .rotationEffect(.degrees(Double(drag) / 16), anchor: .bottom)
+                    .shadow(color: .black.opacity(abs(dragX) > 6 ? 0.5 : 0.3), radius: 28, y: 16)
+                    .offset(x: dragX)
+                    .rotationEffect(.degrees(Double(dragX) / 16), anchor: .bottom)
                     .gesture(swipe)
             }
         }
@@ -183,21 +193,22 @@ struct ReviewView: View {
     @ViewBuilder
     private var stamp: some View {
         if let pending {
+            // Stamped on the leading edge of the card's travel, tilted the way
+            // the card is going.
             let isKeep = pending == .keep
             HStack(spacing: 8) {
-                Image(systemName: isKeep ? "checkmark" : "trash")
-                    .font(.system(size: 17, weight: .semibold))
-                Text(isKeep ? "Keep" : "Delete")
-                    .font(.system(size: 17, weight: .semibold))
+                Image(systemName: pending.iconName)
+                Text(pending.label)
             }
-            .foregroundStyle(isKeep ? CullTheme.keep : CullTheme.del)
+            .font(.system(size: 17, weight: .semibold))
+            .foregroundStyle(pending.color)
             .padding(.horizontal, 15)
             .padding(.vertical, 9)
             .background(CullTheme.bg.opacity(0.6))
             .clipShape(RoundedRectangle(cornerRadius: 13))
             .overlay(
                 RoundedRectangle(cornerRadius: 13)
-                    .stroke(isKeep ? CullTheme.keep : CullTheme.del, lineWidth: 2)
+                    .stroke(pending.color, lineWidth: 2)
             )
             .rotationEffect(.degrees(isKeep ? -6 : 6))
             .padding(22)
@@ -213,9 +224,8 @@ struct ReviewView: View {
     @ViewBuilder
     private func edgeWash(for decision: SwipeDecision) -> some View {
         if session.isReviewing, leaning == decision {
-            let color = decision == .keep ? CullTheme.keep : CullTheme.del
             LinearGradient(
-                colors: [color.opacity(0.5), color.opacity(0.14), .clear],
+                colors: [decision.color.opacity(0.5), decision.color.opacity(0.14), .clear],
                 startPoint: decision == .keep ? .trailing : .leading,
                 endPoint: decision == .keep ? .leading : .trailing
             )
@@ -260,8 +270,7 @@ struct ReviewView: View {
     }
 
     private func actionButton(_ decision: SwipeDecision) -> some View {
-        let isKeep = decision == .keep
-        let color = isKeep ? CullTheme.keep : CullTheme.del
+        let color = decision.color
         let isLit = pending == decision
         let isDimmed = pending != nil && pending != decision
         // Below the commit point the matching button brightens with the drag;
@@ -272,9 +281,9 @@ struct ReviewView: View {
             decide(decision)
         } label: {
             VStack(spacing: 8) {
-                Image(systemName: isKeep ? "checkmark" : "trash")
+                Image(systemName: decision.iconName)
                     .font(.system(size: 24, weight: .regular))
-                Text(isKeep ? "Keep" : "Delete")
+                Text(decision.label)
                     .font(.system(size: 15, weight: .semibold))
             }
             .foregroundStyle(color)

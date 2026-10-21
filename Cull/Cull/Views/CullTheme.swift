@@ -15,7 +15,12 @@ enum CullTheme {
     static let text      = hex(0xF4F3EF)
     static let text2     = hex(0xA7A9AD)
     static let text3     = hex(0x6B6D71)
+    static let text4     = hex(0x404245)
     static let amber     = hex(0xE3BF6F)
+    static let keep      = hex(0x5FCF8A)
+    static let del       = hex(0xE47668)
+    /// Ink on an amber button — amber is a background here, never text on text.
+    static let amberInk  = hex(0x201B10)
 }
 
 struct CullMonoStyle: ViewModifier {

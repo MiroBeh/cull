@@ -32,13 +32,13 @@ enum StorageEstimate {
 
     /// "2.6 GB", "310 MB" — one unit, one decimal at most.
     static func format(_ bytes: Int) -> String {
-        let split = split(bytes)
-        return "\(split.value) \(split.unit)"
+        let figure = valueAndUnit(bytes)
+        return "\(figure.value) \(figure.unit)"
     }
 
     /// The same figure as a numeral and a unit, for the screens that set the
     /// two in different sizes.
-    static func split(_ bytes: Int) -> (value: String, unit: String) {
+    static func valueAndUnit(_ bytes: Int) -> (value: String, unit: String) {
         let gb = Double(bytes) / 1_073_741_824
         if gb >= 1 { return (String(format: "%.1f", gb), "GB") }
         let mb = Double(bytes) / 1_048_576

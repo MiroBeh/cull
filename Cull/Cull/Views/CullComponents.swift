@@ -1,11 +1,11 @@
 import SwiftUI
 
-extension CullTheme {
-    static let keep = Color(.sRGB, red: 0.373, green: 0.812, blue: 0.541, opacity: 1)
-    static let del  = Color(.sRGB, red: 0.894, green: 0.463, blue: 0.408, opacity: 1)
-    static let text4 = Color(.sRGB, red: 0.251, green: 0.259, blue: 0.271, opacity: 1)
-    /// Ink on an amber button — amber is a background here, never text on text.
-    static let amberInk = Color(.sRGB, red: 0.125, green: 0.106, blue: 0.063, opacity: 1)
+/// How a decision looks, in one place: the gesture, the stamp on the card and
+/// the button all have to say the same thing in the same colour.
+extension SwipeDecision {
+    var color: Color { self == .keep ? CullTheme.keep : CullTheme.del }
+    var iconName: String { self == .keep ? "checkmark" : "trash" }
+    var label: String { self == .keep ? "Keep" : "Delete" }
 }
 
 /// Monospace, for the wordmark and for figures that should not jiggle as they
@@ -85,19 +85,17 @@ struct SectionLabel: View {
 
 struct ThinProgressBar: View {
     let value: Double
-    var color: Color = CullTheme.text
-    var height: CGFloat = 4
 
     var body: some View {
         GeometryReader { geo in
             ZStack(alignment: .leading) {
                 Capsule().fill(CullTheme.lineSolid)
                 Capsule()
-                    .fill(color)
+                    .fill(CullTheme.text)
                     .frame(width: geo.size.width * CGFloat(min(max(value, 0), 1)))
             }
         }
-        .frame(height: height)
+        .frame(height: 4)
         .animation(.easeOut(duration: 0.2), value: value)
     }
 }

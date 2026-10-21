@@ -60,11 +60,15 @@ struct SettingsView: View {
         SurfaceGroup {
             VStack(spacing: 0) {
                 row(label: "Photos culled") {
-                    figure(historyService.photosCulled.formatted(), color: CullTheme.text)
+                    MonoLabel(text: historyService.photosCulled.formatted(), size: 14, color: CullTheme.text)
                 }
                 Hairline()
                 row(label: "Storage freed") {
-                    figure(StorageEstimate.format(historyService.storageFreedBytes), color: CullTheme.amber)
+                    MonoLabel(
+                        text: StorageEstimate.format(historyService.storageFreedBytes),
+                        size: 14,
+                        color: CullTheme.amber
+                    )
                 }
             }
         }
@@ -75,7 +79,7 @@ struct SettingsView: View {
         SurfaceGroup {
             VStack(spacing: 0) {
                 row(label: "Photos you kept") {
-                    figure("\(historyService.keptCount)", color: CullTheme.text)
+                    MonoLabel(text: "\(historyService.keptCount)", size: 14, color: CullTheme.text)
                 }
                 Hairline()
                 Button {
@@ -135,10 +139,6 @@ struct SettingsView: View {
         .padding(.horizontal, 16)
         .padding(.vertical, 13)
         .frame(minHeight: 48)
-    }
-
-    private func figure(_ text: String, color: Color) -> some View {
-        MonoLabel(text: text, size: 14, color: color)
     }
 
     private var footer: some View {

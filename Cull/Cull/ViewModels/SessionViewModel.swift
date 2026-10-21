@@ -62,7 +62,9 @@ class SessionViewModel: ObservableObject {
     }
 
     var bytesFreedSoFar: Int { StorageEstimate.bytes(for: marked) }
-    var canUndo: Bool { !decisions.isEmpty }
+    /// Whether this session has anything to show for itself yet.
+    var hasDecisions: Bool { !decisions.isEmpty }
+    var canUndo: Bool { hasDecisions }
     var isReviewing: Bool { phase == .reviewing }
 
     // MARK: - Running a session
