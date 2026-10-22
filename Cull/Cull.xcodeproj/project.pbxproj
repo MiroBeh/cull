@@ -331,7 +331,6 @@
 				DEVELOPMENT_TEAM = MT23DRL63Z;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
-				INFOPLIST_KEY_NSPhotoLibraryAddUsageDescription = "Cull needs write access to delete photos you choose to remove.";
 				INFOPLIST_KEY_NSPhotoLibraryUsageDescription = "Cull needs access to your photo library to help you organize your photos.";
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
@@ -370,7 +369,6 @@
 				DEVELOPMENT_TEAM = MT23DRL63Z;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
-				INFOPLIST_KEY_NSPhotoLibraryAddUsageDescription = "Cull needs write access to delete photos you choose to remove.";
 				INFOPLIST_KEY_NSPhotoLibraryUsageDescription = "Cull needs access to your photo library to help you organize your photos.";
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;

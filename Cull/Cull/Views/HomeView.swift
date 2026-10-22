@@ -125,7 +125,7 @@ struct HomeView: View {
                 .font(.system(size: 28, weight: .semibold))
                 .tracking(-0.02 * 28)
                 .foregroundStyle(CullTheme.text)
-            Text("Without access to the library there is nothing to clean. You can grant it in Settings — nothing leaves your device.")
+            Text("Without access to the library there is nothing to clean. You can grant it in Settings — nothing leaves your device unless you share it.")
                 .font(.system(size: 17))
                 .lineSpacing(5)
                 .foregroundStyle(CullTheme.text2)

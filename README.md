@@ -93,7 +93,7 @@ iOS Settings reports.
 - **Platform:** iPhone, portrait
 - **Language:** Swift, SwiftUI
 - **Photo access:** PhotoKit (`PHPhotoLibrary`), read-write
-- **Permissions:** `NSPhotoLibraryUsageDescription`, `NSPhotoLibraryAddUsageDescription`
+- **Permissions:** `NSPhotoLibraryUsageDescription` (read-write covers deleting)
 - **Palette:** charcoal `#1A1B1F`, bone `#F4F3EF`, amber `#E3BF6F` for storage,
   green `#5FCF8A` for keep, red `#E47668` for delete. Sentence-case sans for
   anything you read; monospace for the big storage numeral and tabular figures.

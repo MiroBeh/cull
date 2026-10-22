@@ -54,7 +54,7 @@ step "Photo access"
 # instant it does. Checked against the build settings because the Info.plist is
 # generated from them (INFOPLIST_KEY_*), so there is no file to read.
 settings="$(xcodebuild -project "$PROJECT" -target "$APP_TARGET" -configuration Debug -showBuildSettings 2>/dev/null || true)"
-for key in NSPhotoLibraryUsageDescription NSPhotoLibraryAddUsageDescription; do
+for key in NSPhotoLibraryUsageDescription; do
     if grep -q "INFOPLIST_KEY_$key = ." <<<"$settings"; then
         pass "$key set"
     else
