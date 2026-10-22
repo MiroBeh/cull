@@ -186,7 +186,7 @@ struct OnboardingView: View {
                         eyebrow: "PERMISSION",
                         icon: AnyView(SparkIconView(size: 56)),
                         title: "One thing first.",
-                        body: "Cull needs access to your photo library. Nothing leaves your device. iOS asks you to confirm before anything is deleted, and deletions land in Recently Deleted — recoverable for 30 days.",
+                        body: "Cull needs access to your photo library. Nothing leaves your device unless you share it, and shared photos never carry their location. iOS asks you to confirm before anything is deleted, and deletions land in Recently Deleted — recoverable for 30 days.",
                         ctaText: "Grant access",
                         ctaTag: "BEGIN ↗",
                         showSkip: false,
