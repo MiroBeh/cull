@@ -144,9 +144,9 @@ struct ReviewView: View {
                     }
                 } label: {
                     Image(systemName: "xmark")
-                        .font(.system(size: 13, weight: .medium))
+                        .font(.system(size: 16, weight: .medium))
                         .foregroundStyle(CullTheme.text3)
-                        .frame(width: 28, height: 28)
+                        .frame(width: 32, height: 32)
                         .contentShape(Rectangle())
                 }
                 .buttonStyle(.plain)

@@ -48,9 +48,9 @@ struct HomeView: View {
 
     private var topBar: some View {
         HStack {
-            MonoLabel(text: "Cull", size: 12, tracking: 0.22 * 12, color: CullTheme.text, uppercase: true)
+            MonoLabel(text: "Cull", size: 14, tracking: 0.22 * 14, color: CullTheme.text, uppercase: true)
             Spacer()
-            IconPillButton(systemName: "gearshape") { showSettings = true }
+            IconPillButton(systemName: "gearshape", size: 40) { showSettings = true }
         }
         .padding(.top, 10)
     }
