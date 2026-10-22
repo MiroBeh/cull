@@ -8,7 +8,8 @@ import UniformTypeIdentifiers
 /// A shared photo is the photo, without where it was taken.
 struct ShareTests {
 
-    /// A 4×4 image of the given type carrying a GPS position and a camera make.
+    /// A 4×4 image of the given type carrying a GPS position, the place as
+    /// words, and a camera make.
     private func photoData(type: UTType) throws -> Data {
         let context = try #require(CGContext(
             data: nil, width: 4, height: 4, bitsPerComponent: 8, bytesPerRow: 0,
@@ -29,6 +30,11 @@ struct ShareTests {
                 kCGImagePropertyGPSLatitudeRef: "N",
                 kCGImagePropertyGPSLongitude: 16.3738,
                 kCGImagePropertyGPSLongitudeRef: "E",
+            ],
+            kCGImagePropertyIPTCDictionary: [
+                kCGImagePropertyIPTCCity: "Wien",
+                kCGImagePropertyIPTCSubLocation: "Stephansplatz 3",
+                kCGImagePropertyIPTCCountryPrimaryLocationName: "Austria",
             ],
             kCGImagePropertyTIFFDictionary: [kCGImagePropertyTIFFMake: "Cull"],
             kCGImagePropertyOrientation: 6,
@@ -53,6 +59,29 @@ struct ShareTests {
 
         #expect(kept[kCGImagePropertyGPSDictionary] == nil)
         #expect(kept[kCGImagePropertyOrientation] as? Int == 6)
+    }
+
+    /// Coordinates are not the only way a photo says where it was taken: a
+    /// city and a street in the IPTC or XMP fields say it just as well.
+    @Test(arguments: [UTType.jpeg, .heic])
+    func aSharedPhotoCarriesNoPlaceName(type: UTType) throws {
+        let original = try photoData(type: type)
+        let place = try #require(properties(of: original)[kCGImagePropertyIPTCDictionary] as? [CFString: Any])
+        try #require(place[kCGImagePropertyIPTCSubLocation] as? String == "Stephansplatz 3")
+
+        let shared = try #require(SharablePhoto.removingLocation(from: original))
+        let kept = try properties(of: shared)[kCGImagePropertyIPTCDictionary] as? [CFString: Any] ?? [:]
+
+        #expect(kept[kCGImagePropertyIPTCCity] == nil)
+        #expect(kept[kCGImagePropertyIPTCSubLocation] == nil)
+        #expect(kept[kCGImagePropertyIPTCCountryPrimaryLocationName] == nil)
+
+        let metadata = try #require(
+            CGImageSourceCreateWithData(shared as CFData, nil)
+                .flatMap { CGImageSourceCopyMetadataAtIndex($0, 0, nil) }
+        )
+        #expect(CGImageMetadataCopyTagWithPath(metadata, nil, "photoshop:City" as CFString) == nil)
+        #expect(CGImageMetadataCopyTagWithPath(metadata, nil, "Iptc4xmpCore:Location" as CFString) == nil)
     }
 
     @Test func somethingThatIsNotAnImageIsNotShared() {

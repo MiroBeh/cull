@@ -55,7 +55,24 @@ struct SharablePhoto: Transferable {
         }
     }
 
-    /// The same image with its GPS metadata — EXIF and XMP — dropped.
+    /// Where a photo was taken, written out as words rather than coordinates.
+    /// Cameras, Lightroom and photos saved from the web carry these; ImageIO
+    /// keeps the IPTC and XMP copies of each in step, so removing the XMP path
+    /// removes both.
+    private static let placeTags = [
+        "photoshop:City", "photoshop:State", "photoshop:Country",
+        "Iptc4xmpCore:Location", "Iptc4xmpCore:CountryCode",
+        "Iptc4xmpExt:LocationCreated", "Iptc4xmpExt:LocationShown",
+    ]
+
+    private static let placeKeys = [
+        kCGImagePropertyIPTCCity, kCGImagePropertyIPTCSubLocation,
+        kCGImagePropertyIPTCProvinceState, kCGImagePropertyIPTCCountryPrimaryLocationName,
+        kCGImagePropertyIPTCCountryPrimaryLocationCode,
+    ]
+
+    /// The same image with its location dropped: the GPS position in EXIF and
+    /// XMP, and the place names in IPTC and XMP.
     ///
     /// Copies the image source rather than re-encoding it, so the pixels are
     /// untouched. Only if the copy fails, or still has a location in it, is the
@@ -70,9 +87,13 @@ struct SharablePhoto: Transferable {
         // and replaces, rather than merges with, what the source carries.
         let copied = NSMutableData()
         if let metadata = CGImageSourceCopyMetadataAtIndex(source, 0, nil),
+           let scrubbed = CGImageMetadataCreateMutableCopy(metadata),
            let destination = CGImageDestinationCreateWithData(copied, type, 1, nil) {
+            for path in placeTags {
+                CGImageMetadataRemoveTagWithPath(scrubbed, nil, path as CFString)
+            }
             let options: [CFString: Any] = [
-                kCGImageDestinationMetadata: metadata,
+                kCGImageDestinationMetadata: scrubbed,
                 kCGImageDestinationMergeMetadata: false,
                 kCGImageMetadataShouldExcludeGPS: true,
             ]
@@ -99,6 +120,8 @@ struct SharablePhoto: Transferable {
     private static func hasLocation(_ data: Data) -> Bool {
         guard let source = CGImageSourceCreateWithData(data as CFData, nil) else { return true }
         let properties = CGImageSourceCopyPropertiesAtIndex(source, 0, nil) as? [CFString: Any]
-        return properties?[kCGImagePropertyGPSDictionary] != nil
+        if properties?[kCGImagePropertyGPSDictionary] != nil { return true }
+        let iptc = properties?[kCGImagePropertyIPTCDictionary] as? [CFString: Any] ?? [:]
+        return placeKeys.contains { iptc[$0] != nil }
     }
 }
