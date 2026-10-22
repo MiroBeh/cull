@@ -12,7 +12,7 @@ PROJECT="$ROOT/Cull/Cull.xcodeproj"
 SCHEME="Cull"
 APP_TARGET="Cull"
 TEST_TARGET="CullTests"
-BUNDLE_ID="mirobehninger.Cull"
+BUNDLE_ID="com.mirobehninger.cull"
 BUILD_DIR="$ROOT/build"
 BACKUP_DIR="$ROOT/backups"
 
