@@ -1,0 +1,200 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>Cull — Design A</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600&family=Geist+Mono:wght@400;500&display=swap" rel="stylesheet" />
+<!--
+  Cull — Design A, "One Button". The design source for the app as it is built.
+  Came from the A variant of design/simple-prototype.html on the
+  prototype/simpler-app branch; B ("Daily Pile") and C ("Grid Tap") were not
+  taken forward and stay on that branch.
+
+  Palette lifted from Cull/Cull/Views/OnboardingStyle.swift + CullComponents.swift.
+  Sharing is the system share sheet, so there is no artboard for it: the
+  prototype drew one, and drawing what iOS already provides was a mistake.
+-->
+<style>
+  :root{
+    --bg:#1A1B1F; --surface:#25272A; --surface2:#2F3134; --line:#3D4044;
+    --text:#F4F3EF; --text2:#A7A9AD; --text3:#6B6D71;
+    --amber:#E3BF6F; --keep:#5FCF8A; --del:#E47668;
+    --sans:"Geist","Inter",-apple-system,system-ui,sans-serif;
+    --mono:"Geist Mono",ui-monospace,"SF Mono",monospace;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:#101114;color:var(--text);font-family:var(--sans);-webkit-font-smoothing:antialiased}
+  header.page{padding:40px 32px 8px;max-width:1240px}
+  .kicker{font-family:var(--mono);font-size:11px;letter-spacing:.22em;text-transform:uppercase;color:var(--amber)}
+  header.page h1{margin:12px 0 0;font-size:28px;font-weight:600;letter-spacing:-.02em}
+  header.page .idea{margin:14px 0 0;max-width:62ch;font-size:15px;line-height:1.55;color:var(--text2)}
+  main{display:flex;gap:40px;padding:32px 32px 64px;overflow-x:auto;align-items:flex-start}
+  figure.art{margin:0;flex:0 0 auto}
+  figcaption{margin-top:14px;font-family:var(--mono);font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--text3)}
+
+  /* ── phone frame ─────────────────────────────────── */
+  .phone{position:relative;width:390px;height:844px;border-radius:48px;overflow:hidden;
+    background:var(--bg);box-shadow:0 40px 80px rgba(0,0,0,.45),0 0 0 1px rgba(255,255,255,.08)}
+  .island{position:absolute;top:11px;left:50%;transform:translateX(-50%);width:126px;height:37px;border-radius:24px;background:#000;z-index:50}
+  .status{position:absolute;top:0;left:0;right:0;height:54px;display:flex;align-items:center;justify-content:space-between;
+    padding:19px 28px 0;z-index:20;font-size:15px;font-weight:600}
+  .homebar{position:absolute;bottom:8px;left:50%;transform:translateX(-50%);width:139px;height:5px;border-radius:100px;background:rgba(255,255,255,.7);z-index:60}
+  .screen{position:absolute;inset:0;padding-top:54px;padding-bottom:28px;display:flex;flex-direction:column}
+  .pad{flex:1;display:flex;flex-direction:column;padding:0 24px;min-height:0}
+
+  /* ── building blocks ────────────────────────────── */
+  .topbar{display:flex;align-items:center;justify-content:space-between;padding:10px 0 0;flex:0 0 auto}
+  .brand{font-family:var(--mono);font-size:12px;letter-spacing:.22em;text-transform:uppercase}
+  .icobtn{width:36px;height:36px;border-radius:999px;background:var(--surface);display:grid;place-items:center;color:var(--text2)}
+  .num{font-family:var(--mono);font-size:68px;font-weight:500;line-height:1;letter-spacing:-.04em;color:var(--amber);font-feature-settings:"tnum" 1}
+  .num .unit{font-size:24px;margin-left:8px;letter-spacing:0}
+  .lede{font-size:17px;line-height:1.5;color:var(--text2);margin:16px 0 0;max-width:24ch}
+  .btn{width:100%;border:0;border-radius:18px;height:60px;font-family:var(--sans);font-size:17px;font-weight:600;
+    display:flex;align-items:center;justify-content:center;gap:10px;cursor:default;flex:0 0 auto}
+  .btn.amber{background:var(--amber);color:#201B10}
+  .btn.ghost{background:transparent;color:var(--text2);font-weight:500;height:52px}
+  .hint{font-size:13px;color:var(--text3);text-align:center;margin:14px 0 0}
+  .quiet{font-size:13px;color:var(--text3);text-align:center;margin:auto 0 0;padding-top:20px}
+  .spacer{flex:1 1 auto;min-height:12px}
+
+  /* ── the photo itself ───────────────────────────── */
+  .ph{position:relative;border-radius:16px;overflow:hidden;background:
+      repeating-linear-gradient(135deg,hsl(var(--h) 20% 36% / .5) 0 17px,hsl(var(--h) 20% 31% / .5) 17px 18px),
+      linear-gradient(150deg,hsl(var(--h) 24% 44%),hsl(var(--h) 26% 25%))}
+
+  /* ── review ─────────────────────────────────────── */
+  .prog{padding:14px 24px 0;flex:0 0 auto}
+  .prog-row{display:flex;justify-content:space-between;align-items:baseline;font-size:13px;color:var(--text2);margin-bottom:9px}
+  .prog-row .left{display:flex;align-items:center;gap:10px}
+  .prog-row .exit{color:var(--text3);font-size:15px;line-height:1}
+  .prog-row .freed{font-family:var(--mono);font-size:12px;color:var(--amber)}
+  .track{height:4px;border-radius:999px;background:var(--line);overflow:hidden}
+  .track i{display:block;height:100%;border-radius:999px;background:var(--text)}
+  .photo-full{flex:1;margin:18px 20px 0;min-height:0;position:relative}
+  .photo-full .ph{position:absolute;inset:0;border-radius:24px}
+  .swipe-wrap{position:absolute;inset:0}
+  .swipe-wrap.swiping{transform:translateX(76px) rotate(7deg);filter:drop-shadow(0 22px 34px rgba(0,0,0,.5))}
+  .stamp{position:absolute;top:22px;left:22px;display:inline-flex;align-items:center;gap:8px;
+    padding:9px 15px;border-radius:13px;font-size:17px;font-weight:600;background:rgba(26,27,31,.6);
+    transform:rotate(-6deg);border:2px solid currentColor}
+  .stamp.keep{color:var(--keep)}
+  .edge{position:absolute;top:0;bottom:0;right:-20px;width:120px;z-index:3;pointer-events:none}
+  .edge.keep{background:linear-gradient(270deg,rgba(95,207,138,.5),rgba(95,207,138,.14) 45%,transparent)}
+  .metarow{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:16px 24px 0;flex:0 0 auto}
+  .meta{font-size:14px;color:var(--text2)}
+  .sharebtn{display:inline-flex;align-items:center;gap:8px;padding:9px 16px;border-radius:999px;
+    background:var(--surface);border:1px solid var(--line);font-size:14px;font-weight:500;color:var(--text)}
+  .actions{display:flex;gap:12px;padding:14px 20px 0;flex:0 0 auto}
+  .act{flex:1;height:86px;border-radius:22px;border:1px solid var(--line);background:var(--surface);
+    display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;font-size:15px;font-weight:600}
+  .act.del{background:rgba(228,118,104,.14);border-color:rgba(228,118,104,.4);color:var(--del)}
+  .act.keep{background:rgba(95,207,138,.14);border-color:rgba(95,207,138,.4);color:var(--keep)}
+  .act.lit{background:rgba(95,207,138,.3);box-shadow:0 0 0 2px var(--keep)}
+  .act.dim{opacity:.3}
+  .undo{display:inline-flex;align-items:center;gap:6px;color:var(--text2)}
+
+  /* ── done ───────────────────────────────────────── */
+  .center{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;gap:6px}
+  .badge{width:84px;height:84px;border-radius:999px;display:grid;place-items:center;margin-bottom:24px}
+  .badge.keep{background:rgba(95,207,138,.16);color:var(--keep)}
+  .big{font-size:26px;font-weight:600;letter-spacing:-.02em}
+  .sub{font-size:16px;color:var(--text2);max-width:26ch;line-height:1.5}
+  .sub b{white-space:nowrap}
+</style>
+</head>
+<body>
+<header class="page">
+  <div class="kicker">Cull · Design A</div>
+  <h1>One Button</h1>
+  <p class="idea">Nothing to choose. No month list, no filters — the app picks the next 50 photos and asks
+    one question at a time, so a session is short and has a visible end. Big labelled Delete/Keep buttons;
+    swiping still works, and the card tilts and stamps as you drag. The quiet Share button under the photo
+    covers the other reason people dig through old photos: you find one you had forgotten about and want to
+    send it to someone — through the system share sheet, which is why there is no artboard for it here.</p>
+</header>
+<main id="stage"></main>
+
+<script>
+const I = {
+  gear:(c='currentColor',s=17)=>`<svg width="${s}" height="${s}" viewBox="0 0 24 24" fill="none" stroke="${c}" stroke-width="1.6"><circle cx="12" cy="12" r="3"/><path d="M12 2v3M12 19v3M4.93 4.93l2.12 2.12M16.95 16.95l2.12 2.12M2 12h3M19 12h3M4.93 19.07l2.12-2.12M16.95 7.05l2.12-2.12" stroke-linecap="round"/></svg>`,
+  trash:(c='currentColor',s=24)=>`<svg width="${s}" height="${s}" viewBox="0 0 24 24" fill="none" stroke="${c}" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M4 7h16M9 7V4h6v3M6 7l1 13h10l1-13M10 11v6M14 11v6"/></svg>`,
+  check:(c='currentColor',s=24)=>`<svg width="${s}" height="${s}" viewBox="0 0 24 24" fill="none" stroke="${c}" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12l5 5L20 6"/></svg>`,
+  x:(c='currentColor',s=14)=>`<svg width="${s}" height="${s}" viewBox="0 0 24 24" fill="none" stroke="${c}" stroke-width="2.4" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg>`,
+  undo:(c='currentColor',s=17)=>`<svg width="${s}" height="${s}" viewBox="0 0 24 24" fill="none" stroke="${c}" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 8l4-4M3 8l4 4M3 8h11a6 6 0 010 12h-3"/></svg>`,
+  share:(c='currentColor',s=17)=>`<svg width="${s}" height="${s}" viewBox="0 0 24 24" fill="none" stroke="${c}" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 15V3M12 3L8 7M12 3l4 4M5 13v6a2 2 0 002 2h10a2 2 0 002-2v-6"/></svg>`,
+};
+const statusRight = `<svg width="72" height="13" viewBox="0 0 72 13" fill="none"><g fill="#fff"><rect x="0" y="8" width="3.2" height="5" rx=".7"/><rect x="4.8" y="5.5" width="3.2" height="7.5" rx=".7"/><rect x="9.6" y="3" width="3.2" height="10" rx=".7"/><rect x="14.4" y="0.5" width="3.2" height="12.5" rx=".7"/></g><path d="M29.5 4C31.8 4 33.9 4.9 35.4 6.4L36.5 5.3C34.7 3.5 32.2 2.3 29.5 2.3C26.8 2.3 24.3 3.5 22.5 5.3L23.6 6.4C25.1 4.9 27.2 4 29.5 4Z" fill="#fff"/><path d="M29.5 7.6C30.9 7.6 32.1 8.1 33 9L34.1 7.9C32.8 6.7 31.2 5.9 29.5 5.9C27.8 5.9 26.2 6.7 24.9 7.9L26 9C26.9 8.1 28.1 7.6 29.5 7.6Z" fill="#fff"/><circle cx="29.5" cy="11.3" r="1.5" fill="#fff"/><rect x="45.5" y="0.5" width="23" height="12" rx="3.5" stroke="#fff" stroke-opacity=".35"/><rect x="47" y="2" width="20" height="9" rx="2" fill="#fff"/><path d="M70 4.5V8.5C70.8 8.2 71.5 7.2 71.5 6.5C71.5 5.8 70.8 4.8 70 4.5Z" fill="#fff" fill-opacity=".4"/></svg>`;
+
+const ph = (h) => `<div class="ph" style="--h:${h}"></div>`;
+const phone = (label, body) => `<figure class="art"><div class="phone">
+  <div class="island"></div>
+  <div class="status"><span>9:41</span>${statusRight}</div>
+  <div class="screen">${body}</div><div class="homebar"></div>
+</div><figcaption>${label}</figcaption></figure>`;
+
+/* Home — a storage number and one button. */
+const home = () => `<div class="pad">
+  <div class="topbar"><span class="brand">Cull</span><span class="icobtn">${I.gear()}</span></div>
+  <div class="spacer"></div>
+  <div class="num">8.4<span class="unit">GB</span></div>
+  <p class="lede">can be freed from photos you haven't looked at yet.</p>
+  <div class="spacer"></div>
+  <button class="btn amber">Start cleaning</button>
+  <p class="hint">50 photos at a time · about two minutes</p>
+  <p class="quiet">You've freed 2.1 GB with Cull so far</p>
+</div>`;
+
+/* Review — one photo, one question. `swipe` shows the state past the commit
+   point: card tilted, decision stamped, edge washed, buttons lit and dimmed. */
+const review = (mode='rest') => {
+  const sw = mode === 'swipe';
+  return `
+  <div class="prog">
+    <div class="prog-row">
+      <span class="left"><span class="exit">${I.x('var(--text3)',13)}</span>12 of 50</span>
+      <span class="freed">+310 MB freed</span>
+    </div>
+    <div class="track"><i style="width:24%"></i></div>
+  </div>
+  <div class="photo-full">
+    <div class="swipe-wrap${sw?' swiping':''}">
+      ${ph(25)}
+      ${sw?`<span class="stamp keep">${I.check('var(--keep)',21)} Keep</span>`:''}
+    </div>
+    ${sw?'<div class="edge keep"></div>':''}
+  </div>
+  <div class="metarow">
+    <span class="meta">13 April 2026 · 3.4 MB</span>
+    <span class="sharebtn">${I.share('var(--text)',16)} Share</span>
+  </div>
+  <div class="actions">
+    <div class="act del${sw?' dim':''}">${I.trash('var(--del)',26)}Delete</div>
+    <div class="act keep${sw?' lit':''}">${I.check('var(--keep)',26)}Keep</div>
+  </div>
+  <p class="hint">${sw
+    ? 'Let go to keep it'
+    : `Swipe the photo, or tap &nbsp;·&nbsp; <span class="undo">${I.undo('var(--text2)',15)} Undo</span>`}</p>`;
+};
+
+/* Done — short and finite, with an equally easy way to stop. */
+const done = () => `<div class="pad"><div class="center">
+    <div class="badge keep">${I.check('var(--keep)',38)}</div>
+    <div class="big">That's 50 done</div>
+    <p class="sub">You deleted 31 photos and freed <b style="color:var(--amber);font-weight:600">2.6 GB</b>.</p>
+  </div>
+  <button class="btn amber">Clean 50 more</button>
+  <button class="btn ghost">Finish for today</button>
+</div>`;
+
+document.getElementById('stage').innerHTML = [
+  ['Home — one button', home()],
+  ['Review — at rest', review('rest')],
+  ['Review — past the commit point', review('swipe')],
+  ['Done — short and finite', done()],
+].map(([label, body]) => phone(label, body)).join('');
+</script>
+</body>
+</html>

@@ -1,11 +1,11 @@
 import SwiftUI
 
+/// Short on purpose: the lifetime payoff, what the app remembers, and haptics.
+/// There are no settings for things the app no longer does.
 struct SettingsView: View {
     @Environment(\.dismiss) private var dismiss
     @EnvironmentObject var historyService: ReviewHistoryService
-    @AppStorage("cull.haptics") private var haptics = true
-    @AppStorage("cull.confirmBeforeDelete") private var confirmBeforeDelete = false
-    @AppStorage("cull.showMetadata") private var showMetadata = true
+    @AppStorage(Haptics.settingsKey) private var haptics = true
     @State private var showResetConfirm = false
 
     var body: some View {
@@ -16,7 +16,7 @@ struct SettingsView: View {
                 topBar
                 ScrollView {
                     VStack(alignment: .leading, spacing: 0) {
-                        settingsSections
+                        sections
                         footer
                     }
                     .padding(.horizontal, 16)
@@ -29,22 +29,20 @@ struct SettingsView: View {
         .padding(.top, 54)
         .ignoresSafeArea(edges: .top)
         .confirmationDialog(
-            "Reset all review history?",
+            "Reset your review history?",
             isPresented: $showResetConfirm,
             titleVisibility: .visible
         ) {
-            Button("Reset", role: .destructive) {
-                historyService.reset()
-            }
+            Button("Reset", role: .destructive) { historyService.reset() }
             Button("Cancel", role: .cancel) {}
         } message: {
-            Text("Every photo will be available to swipe through again.")
+            Text("Every photo becomes unreviewed again, and the lifetime totals go back to zero.")
         }
     }
 
     private var topBar: some View {
         HStack {
-            IconPillButton(systemName: "xmark") { dismiss() }
+            IconPillButton(systemName: "xmark", size: 32) { dismiss() }
             Spacer()
             Text("Settings")
                 .font(.system(size: 15, weight: .medium))
@@ -57,155 +55,108 @@ struct SettingsView: View {
     }
 
     @ViewBuilder
-    private var settingsSections: some View {
-        SectionHeader(label: "REVIEW HISTORY", right: "90·DAY MEMORY")
+    private var sections: some View {
+        SectionLabel(text: "Lifetime")
         SurfaceGroup {
             VStack(spacing: 0) {
-                settingsRow(
-                    label: "Photos remembered",
-                    right: AnyView(
-                        Text("\(historyService.keptCount)")
-                            .font(.system(size: 14, weight: .medium, design: .monospaced))
-                            .foregroundStyle(CullTheme.text)
-                            .monospacedDigit()
-                    )
-                )
+                row(label: "Photos culled") {
+                    MonoLabel(text: historyService.photosCulled.formatted(), size: 14, color: CullTheme.text)
+                }
                 Hairline()
-                settingsRow(
-                    label: "Memory window",
-                    right: AnyView(
-                        Text("90 D")
-                            .font(.system(size: 14, weight: .medium, design: .monospaced))
-                            .foregroundStyle(CullTheme.text2)
-                    )
-                )
-                Hairline()
-                settingsRow(
-                    label: "Oldest entry",
-                    right: AnyView(
-                        MonoLabel(text: "—", size: 11, tracking: 0, color: CullTheme.text2)
-                    )
-                )
-            }
-        }
-
-        Spacer().frame(height: 22)
-
-        SectionHeader(label: "LIFETIME")
-        SurfaceGroup {
-            VStack(spacing: 0) {
-                settingsRow(
-                    label: "Photos culled",
-                    right: AnyView(
-                        Text(historyService.photosCulled.formatted())
-                            .font(.system(size: 14, weight: .medium, design: .monospaced))
-                            .foregroundStyle(CullTheme.text)
-                            .monospacedDigit()
-                    )
-                )
-                Hairline()
-                settingsRow(
-                    label: "Storage freed",
-                    right: AnyView(
-                        Text(formatBytes(historyService.storageFreedBytes))
-                            .font(.system(size: 14, weight: .medium, design: .monospaced))
-                            .foregroundStyle(CullTheme.amber)
-                            .monospacedDigit()
-                    )
-                )
-            }
-        }
-
-        Spacer().frame(height: 22)
-
-        SectionHeader(label: "BEHAVIOR")
-        SurfaceGroup {
-            VStack(spacing: 0) {
-                toggleRow(label: "Haptics", binding: $haptics)
-                Hairline()
-                toggleRow(label: "Confirm before delete", binding: $confirmBeforeDelete)
-                Hairline()
-                toggleRow(label: "Show metadata strip", binding: $showMetadata)
-            }
-        }
-
-        Spacer().frame(height: 22)
-
-        VStack(spacing: 0) {
-            Button {
-                showResetConfirm = true
-            } label: {
-                HStack {
-                    Text("Reset review history")
-                        .font(.system(size: 14))
-                        .foregroundStyle(CullTheme.del)
-                    Spacer()
+                row(label: "Storage freed") {
                     MonoLabel(
-                        text: "CLEAR \(historyService.keptCount) ↗",
-                        size: 10,
-                        tracking: 0,
-                        color: CullTheme.del
+                        text: StorageEstimate.format(historyService.storageFreedBytes),
+                        size: 14,
+                        color: CullTheme.amber
                     )
                 }
-                .padding(.horizontal, 16)
-                .padding(.vertical, 13)
-                .frame(minHeight: 46)
-                .contentShape(Rectangle())
             }
-            .buttonStyle(.plain)
         }
-        .background(CullTheme.surface)
-        .clipShape(RoundedRectangle(cornerRadius: 14))
-        .overlay(
-            RoundedRectangle(cornerRadius: 14)
-                .stroke(CullTheme.del.opacity(0.3), lineWidth: 1)
-        )
+
+        Spacer().frame(height: 22)
+
+        SectionLabel(text: "What Cull remembers")
+        SurfaceGroup {
+            VStack(spacing: 0) {
+                row(label: "Photos you kept") {
+                    MonoLabel(text: "\(historyService.keptCount)", size: 14, color: CullTheme.text)
+                }
+                Hairline()
+                Button {
+                    showResetConfirm = true
+                } label: {
+                    HStack {
+                        Text("Reset review history")
+                            .font(.system(size: 15))
+                            .foregroundStyle(CullTheme.del)
+                        Spacer()
+                        Image(systemName: "chevron.right")
+                            .font(.system(size: 12))
+                            .foregroundStyle(CullTheme.del.opacity(0.6))
+                    }
+                    .padding(.horizontal, 16)
+                    .padding(.vertical, 13)
+                    .frame(minHeight: 48)
+                    .contentShape(Rectangle())
+                }
+                .buttonStyle(.plain)
+            }
+        }
+        Text("A photo you keep is left out of later sessions for 90 days, then comes round again.")
+            .font(.system(size: 13))
+            .lineSpacing(3)
+            .foregroundStyle(CullTheme.text3)
+            .padding(.horizontal, 8)
+            .padding(.top, 10)
+
+        Spacer().frame(height: 22)
+
+        SectionLabel(text: "Feel")
+        SurfaceGroup {
+            HStack {
+                Text("Haptics")
+                    .font(.system(size: 15))
+                    .foregroundStyle(CullTheme.text)
+                Spacer()
+                Toggle("", isOn: $haptics)
+                    .labelsHidden()
+                    .tint(CullTheme.keep)
+            }
+            .padding(.horizontal, 16)
+            .padding(.vertical, 13)
+            .frame(minHeight: 48)
+        }
     }
 
-    private func settingsRow(label: String, right: AnyView) -> some View {
+    private func row<Right: View>(label: String, @ViewBuilder right: () -> Right) -> some View {
         HStack {
             Text(label)
-                .font(.system(size: 14))
+                .font(.system(size: 15))
                 .foregroundStyle(CullTheme.text)
             Spacer()
-            right
+            right()
         }
         .padding(.horizontal, 16)
         .padding(.vertical, 13)
-        .frame(minHeight: 46)
-    }
-
-    private func formatBytes(_ bytes: Int) -> String {
-        guard bytes > 0 else { return "0 MB" }
-        let gb = Double(bytes) / 1_073_741_824
-        if gb >= 1 { return String(format: "%.1f GB", gb) }
-        let mb = Double(bytes) / 1_048_576
-        return String(format: "%.0f MB", mb)
-    }
-
-    private func toggleRow(label: String, binding: Binding<Bool>) -> some View {
-        HStack {
-            Text(label)
-                .font(.system(size: 14))
-                .foregroundStyle(CullTheme.text)
-            Spacer()
-            Toggle("", isOn: binding)
-                .labelsHidden()
-                .tint(CullTheme.keep)
-        }
-        .padding(.horizontal, 16)
-        .padding(.vertical, 13)
-        .frame(minHeight: 46)
+        .frame(minHeight: 48)
     }
 
     private var footer: some View {
         HStack {
-            MonoLabel(text: "CULL 1.0.3", size: 10, tracking: 0.18 * 10, color: CullTheme.text4)
+            MonoLabel(text: "Cull \(appVersion)", size: 11, color: CullTheme.text4)
             Spacer()
-            MonoLabel(text: "BUILD 248", size: 10, tracking: 0.18 * 10, color: CullTheme.text4)
+            MonoLabel(text: "Build \(buildNumber)", size: 11, color: CullTheme.text4)
         }
         .padding(.horizontal, 8)
         .padding(.top, 24)
         .padding(.bottom, 8)
+    }
+
+    private var appVersion: String {
+        Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String ?? "—"
+    }
+
+    private var buildNumber: String {
+        Bundle.main.infoDictionary?["CFBundleVersion"] as? String ?? "—"
     }
 }

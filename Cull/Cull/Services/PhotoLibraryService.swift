@@ -2,8 +2,18 @@ import Photos
 import SwiftUI
 import Combine
 
-class PhotoLibraryService: ObservableObject {
+class PhotoLibraryService: ObservableObject, PhotoSource {
     @Published var authorizationStatus: PHAuthorizationStatus = PHPhotoLibrary.authorizationStatus(for: .readWrite)
+
+    var hasAccess: Bool {
+        authorizationStatus == .authorized || authorizationStatus == .limited
+    }
+
+    /// Picks up a change made in iOS Settings while the app was in the
+    /// background — the only way out of the no-access screen.
+    func refreshAuthorizationStatus() {
+        authorizationStatus = PHPhotoLibrary.authorizationStatus(for: .readWrite)
+    }
 
     func requestAuthorization() async -> Bool {
         let status = await PHPhotoLibrary.requestAuthorization(for: .readWrite)
@@ -11,127 +21,85 @@ class PhotoLibraryService: ObservableObject {
         return status == .authorized || status == .limited
     }
 
-    func fetchPhotos(filter: SessionFilter, history: ReviewHistoryService, limit: Int = 500) async -> [Photo] {
-        let options = PHFetchOptions()
-        options.sortDescriptors = [NSSortDescriptor(key: "creationDate", ascending: false)]
-        options.fetchLimit = limit
+    // MARK: - PhotoSource
+
+    /// Walks a shuffled index list over a lazy fetch result, so picking 50
+    /// photos out of a library of 40,000 never materialises the 40,000.
+    func sessionBatch(limit: Int, history: ReviewHistoryService) async -> [Photo] {
+        let result = fetchImages()
+        guard result.count > 0, limit > 0 else { return [] }
 
         var photos: [Photo] = []
-
-        switch filter {
-        case .all:
-            options.predicate = NSPredicate(format: "mediaType == %d", PHAssetMediaType.image.rawValue)
-            let result = PHAsset.fetchAssets(with: options)
-            result.enumerateObjects { asset, _, _ in
-                photos.append(Photo(asset: asset))
-            }
-
-        case .shuffle:
-            // Walk a shuffled index list over a lazy fetch result so we never
-            // materialize the whole library just to pick `limit` assets.
-            options.fetchLimit = 0
-            options.sortDescriptors = nil
-            options.predicate = NSPredicate(format: "mediaType == %d", PHAssetMediaType.image.rawValue)
-            let result = PHAsset.fetchAssets(with: options)
-            guard result.count > 0 else { return [] }
-            var indices = Array(0..<result.count)
-            indices.shuffle()
-            for index in indices {
-                let asset = result.object(at: index)
-                guard !history.isKept(asset.localIdentifier) else { continue }
-                photos.append(Photo(asset: asset))
-                if photos.count >= limit { break }
-            }
-            return photos
-
-        case .month(let year, let month):
-            let cal = Calendar.current
-            var startComps = DateComponents()
-            startComps.year = year
-            startComps.month = month
-            startComps.day = 1
-            guard let start = cal.date(from: startComps),
-                  let end = cal.date(byAdding: .month, value: 1, to: start) else {
-                return []
-            }
-            options.predicate = NSPredicate(
-                format: "mediaType == %d AND creationDate >= %@ AND creationDate < %@",
-                PHAssetMediaType.image.rawValue,
-                start as NSDate,
-                end as NSDate
-            )
-            let result = PHAsset.fetchAssets(with: options)
-            result.enumerateObjects { asset, _, _ in
-                photos.append(Photo(asset: asset))
-            }
-
-        case .album(let localId, _):
-            let collections = PHAssetCollection.fetchAssetCollections(
-                withLocalIdentifiers: [localId],
-                options: nil
-            )
-            guard let collection = collections.firstObject else { return [] }
-            options.predicate = NSPredicate(format: "mediaType == %d", PHAssetMediaType.image.rawValue)
-            let result = PHAsset.fetchAssets(in: collection, options: options)
-            result.enumerateObjects { asset, _, _ in
-                photos.append(Photo(asset: asset))
-            }
+        for index in Array(0..<result.count).shuffled() {
+            let asset = result.object(at: index)
+            guard !history.isKept(asset.localIdentifier) else { continue }
+            photos.append(Photo(asset: asset))
+            if photos.count >= limit { break }
         }
-
-        return history.filterUnreviewed(photos)
+        return photos
     }
 
-    func fetchAlbums() async -> [PHAssetCollection] {
-        var albums: [PHAssetCollection] = []
-        let userAlbums = PHAssetCollection.fetchAssetCollections(
-            with: .album,
-            subtype: .any,
-            options: nil
-        )
-        userAlbums.enumerateObjects { collection, _, _ in
-            if collection.localizedTitle != nil {
-                albums.append(collection)
-            }
+    func unreviewedCount(history: ReviewHistoryService) async -> Int {
+        var count = 0
+        fetchImages().enumerateObjects { asset, _, _ in
+            if !history.isKept(asset.localIdentifier) { count += 1 }
         }
-        return albums.sorted { ($0.localizedTitle ?? "") < ($1.localizedTitle ?? "") }
+        return count
     }
 
-    func fetchMonthBuckets(history: ReviewHistoryService) async -> [MonthBucket] {
-        let options = PHFetchOptions()
-        options.predicate = NSPredicate(format: "mediaType == %d", PHAssetMediaType.image.rawValue)
-        options.sortDescriptors = [NSSortDescriptor(key: "creationDate", ascending: false)]
-
-        let result = PHAsset.fetchAssets(with: options)
-        let cal = Calendar.current
-
-        struct BucketKey: Hashable { let year: Int; let month: Int }
-        var totals: [BucketKey: Int] = [:]
-        var unreviewed: [BucketKey: Int] = [:]
-
-        result.enumerateObjects { asset, _, _ in
-            guard let date = asset.creationDate else { return }
-            let comps = cal.dateComponents([.year, .month], from: date)
-            guard let y = comps.year, let m = comps.month else { return }
-            let key = BucketKey(year: y, month: m)
-            totals[key, default: 0] += 1
-            if !history.isKept(asset.localIdentifier) {
-                unreviewed[key, default: 0] += 1
-            }
-        }
-
-        return totals
-            .compactMap { key, total -> MonthBucket? in
-                let u = unreviewed[key] ?? 0
-                guard u > 0 else { return nil }
-                return MonthBucket(year: key.year, month: key.month, totalCount: total, unreviewedCount: u)
-            }
-            .sorted { ($0.year, $0.month) > ($1.year, $1.month) }
-    }
-
-    func deletePhotos(_ photos: [Photo]) async throws {
-        let assets = photos.map { $0.asset }
+    func delete(_ photos: [Photo]) async throws {
+        let assets = photos.compactMap { $0.asset }
+        guard !assets.isEmpty else { return }
+        // PhotoKit presents its own confirmation for assets the app did not
+        // create, and throws if the user declines it. That prompt is the only
+        // confirmation Cull asks for.
         try await PHPhotoLibrary.shared().performChanges {
             PHAssetChangeRequest.deleteAssets(assets as NSFastEnumeration)
         }
+    }
+
+    // MARK: - Images
+
+    /// The photo at display size, for the review card.
+    static func image(for photo: Photo, targetSize: CGSize) async -> UIImage? {
+        guard let asset = photo.asset else { return nil }
+        return await withCheckedContinuation { continuation in
+            let options = PHImageRequestOptions()
+            options.deliveryMode = .highQualityFormat
+            options.isNetworkAccessAllowed = true
+            options.isSynchronous = false
+            PHImageManager.default().requestImage(
+                for: asset,
+                targetSize: targetSize,
+                contentMode: .aspectFill,
+                options: options
+            ) { image, _ in
+                continuation.resume(returning: image)
+            }
+        }
+    }
+
+    /// The photo at full quality, for sharing. The share sheet hands on what
+    /// the library actually holds, not the card's thumbnail.
+    static func imageData(for photo: Photo) async -> Data? {
+        guard let asset = photo.asset else { return nil }
+        return await withCheckedContinuation { continuation in
+            let options = PHImageRequestOptions()
+            options.version = .current
+            options.deliveryMode = .highQualityFormat
+            options.isNetworkAccessAllowed = true
+            PHImageManager.default().requestImageDataAndOrientation(
+                for: asset,
+                options: options
+            ) { data, _, _, _ in
+                continuation.resume(returning: data)
+            }
+        }
+    }
+
+    private func fetchImages() -> PHFetchResult<PHAsset> {
+        let options = PHFetchOptions()
+        options.predicate = NSPredicate(format: "mediaType == %d", PHAssetMediaType.image.rawValue)
+        return PHAsset.fetchAssets(with: options)
     }
 }
