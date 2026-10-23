@@ -69,9 +69,9 @@ Tick the boxes as we go.
 
 In Xcode:
 
-1. [ ] Scheme **Rummage**, destination **Any iOS Device (arm64)**.
-2. [ ] Product → **Archive**.
-3. [ ] In the Organizer window: **Distribute App** → **App Store Connect** →
+1. [x] Scheme **Rummage**, destination **Any iOS Device (arm64)**.
+2. [x] Product → **Archive**.
+3. [x] In the Organizer window: **Distribute App** → **App Store Connect** →
        Upload. Leave automatic signing and "Upload your app's symbols" on.
 4. [ ] Wait for the email saying the build has finished processing (5–30 min).
        It then shows up under the app's **TestFlight** tab.
@@ -86,8 +86,8 @@ App Store Connect → the app → TestFlight → **Test Information**:
 - [ ] Beta app description: what Rummage does in two or three sentences
 - [ ] Feedback email: the address testers' screenshots and comments go to
 - [ ] Privacy policy URL. Apple asks for one when external testers are added.
-      A short page is enough, e.g. a GitHub Pages or Notion page saying that
-      Rummage never sends photos or data off the phone.
+      Use <https://github.com/MiroBeh/rummage/blob/main/docs/PRIVACY.md>
+      (live once `docs/PRIVACY.md` is merged to `main`).
 - [ ] Beta App Review information: contact name, phone, email. No sign-in, so
       no demo account.
 - [ ] Review notes. Spell out the deletion, since that is what a reviewer
@@ -133,5 +133,4 @@ goes on longer.
 ## Open questions
 
 - Which email goes on the feedback address and the review contact?
-- Where does the privacy policy page live?
 - Lower the minimum iOS below 26.2 so friends on older iPhones can test?
