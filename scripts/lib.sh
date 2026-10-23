@@ -12,7 +12,7 @@ PROJECT="$ROOT/Rummage/Rummage.xcodeproj"
 SCHEME="Rummage"
 APP_TARGET="Rummage"
 TEST_TARGET="RummageTests"
-BUNDLE_ID="mirobehninger.Rummage"
+BUNDLE_ID="com.mirobehninger.rummage"
 BUILD_DIR="$ROOT/build"
 BACKUP_DIR="$ROOT/backups"
 

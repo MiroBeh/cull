@@ -35,7 +35,7 @@ from anywhere in the tree.
    [developer.apple.com/account](https://developer.apple.com/account) has no
    pending Program License Agreement. Either one missing stops Apple issuing a
    provisioning profile, and the last line of the build failure is always the
-   unhelpful `No profiles for 'mirobehninger.Rummage' were found` — the real reason
+   unhelpful `No profiles for 'com.mirobehninger.rummage' were found` — the real reason
    is the line above it.
 
 3. **Your team.** The device build has to be signed by a team. The scripts take
@@ -145,7 +145,7 @@ nothing to copy.
 
 What that container holds is small: Rummage keeps the kept-photo marks, the
 lifetime deleted count and the storage-freed total in `UserDefaults`, which on
-disk is `Library/Preferences/mirobehninger.Rummage.plist`. `restore` puts exactly
+disk is `Library/Preferences/com.mirobehninger.rummage.plist`. `restore` puts exactly
 that directory back, after stopping the app so it cannot write its in-memory
 copy over the restore on the way out.
 
@@ -212,7 +212,7 @@ Three failures that read as project problems but are not:
 | `iOS NN.N is not installed` / no eligible destination | Xcode's SDK is newer than every installed runtime: `xcodebuild -downloadPlatform iOS` |
 | `needs to be unlocked to enable development services` | The phone is locked. Unlock it; nothing else is wrong. |
 | Installs land on the wrong phone | Two phones are paired. Set `RUMMAGE_DEVICE` to the right UDID (above). |
-| `No profiles for 'mirobehninger.Rummage' were found` | No Apple ID in Xcode, or an unaccepted agreement. The real reason is the line above it. |
+| `No profiles for 'com.mirobehninger.rummage' were found` | No Apple ID in Xcode, or an unaccepted agreement. The real reason is the line above it. |
 
 One more that is silent rather than loud: Xcode 27 replaced Simulator.app with
 DeviceHub.app, so a simulator can boot headlessly while the script reports
