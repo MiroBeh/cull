@@ -71,7 +71,7 @@ class SessionViewModel: ObservableObject {
 
     func start() async {
         phase = .loading
-        photos = await source.sessionBatch(limit: Self.batchSize, history: history)
+        photos = await source.sessionBatch(limit: Self.batchSize, excluding: history.keptIDs)
         kept = []
         marked = []
         decisions = []
@@ -125,6 +125,9 @@ class SessionViewModel: ObservableObject {
     /// Deletion happens once, here, however the session ended. Up to this point
     /// nothing has left the library.
     private func finish(completedBatch: Bool) async {
+        // Out of `.reviewing` before waiting on the system prompt, so a decision
+        // or a second exit that lands meanwhile is turned away by the guards.
+        phase = .loading
         let reviewed = decisions.count
         var declined = false
         if !marked.isEmpty {
