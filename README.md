@@ -1,7 +1,8 @@
-# Cull — one button, fifty photos
+# Rummage — one button, fifty photos
 
-**Cull** is an iPhone app for getting rid of photos you do not want. It opens on
-a storage number and a single button. Pressing it starts a session of **50
+**Rummage** is an iPhone app for clearing out the photos you do not want, and
+finding the ones worth sending to a friend on the way. It opens on a storage
+number and a single button. Pressing it starts a session of **50
 photos drawn at random from everything you have not reviewed** — about two
 minutes, with a visible end.
 
@@ -15,7 +16,7 @@ and the app does not make you make it.
 
 | Screen | What is on it |
 |---|---|
-| **Home** | How much storage your unreviewed photos could give back, and **Start cleaning**. Plus how much you have freed with Cull so far. |
+| **Home** | How much storage your unreviewed photos could give back, and **Start cleaning**. Plus how much you have freed with Rummage so far. |
 | **Review** | One photo, two large buttons — **Delete** and **Keep** — a thin "12 of 50" progress line, the photo's date and size, a quiet **Share** button, and Undo. |
 | **Done** | How many you deleted and how much space came back, then **Clean 50 more** or **Finish for today**. |
 
@@ -33,7 +34,7 @@ without counting as a decision.
 
 **Deleting.** Nothing leaves the library until the session ends, however it
 ends. Then iOS presents its own confirmation, and what you agreed to goes to
-**Recently Deleted**, recoverable for 30 days. Cull adds no confirmation screen
+**Recently Deleted**, recoverable for 30 days. Rummage adds no confirmation screen
 of its own — asking twice is not more careful, it is just slower.
 
 **Remembering.** A photo you keep is left out of later sessions for 90 days,
@@ -60,8 +61,8 @@ the loops, the signing setup and what the device backups do and do not cover.
 ## How it is put together
 
 ```
-Cull/Cull/
-├── CullApp.swift            # wires the services and the session together
+Rummage/Rummage/
+├── RummageApp.swift         # wires the services and the session together
 ├── ContentView.swift        # onboarding gate, then Home
 ├── Models/
 │   ├── Photo.swift          # id, date, pixel count — no PhotoKit in the logic
@@ -74,7 +75,7 @@ Cull/Cull/
 ├── ViewModels/
 │   └── SessionViewModel.swift  # the whole feature: batch, decisions, deletion
 └── Views/                   # Home, Review, Done, Settings, Onboarding
-Cull/CullTests/              # the session, driven through an in-memory library
+Rummage/RummageTests/        # the session, driven through an in-memory library
 ```
 
 `SessionViewModel` talks to the library only through `PhotoSource`, which is

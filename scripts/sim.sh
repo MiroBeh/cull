@@ -1,18 +1,18 @@
 #!/usr/bin/env bash
 #
-# Builds and runs Cull in a simulator.
+# Builds and runs Rummage in a simulator.
 #
 #   scripts/sim.sh [--photos N] [--media PATH] [--erase]
 #                  [--grant|--revoke] [--console]
 #
-# A fresh simulator's photo library is empty, and Cull with nothing to swipe
+# A fresh simulator's photo library is empty, and Rummage with nothing to swipe
 # shows its empty state and nothing else. --photos seeds generated images so the
 # card stack, the progress counter and the delete confirmation all have
 # something to work on; --media adds real files instead (a file or a directory).
 #
 # The permission prompt is part of the flow worth testing: --revoke puts the
 # simulator back to "not yet asked", --grant skips straight past it, and --erase
-# wipes the device entirely (photos, permissions and Cull's own counters).
+# wipes the device entirely (photos, permissions and Rummage's own counters).
 #
 # Note: this deliberately does *not* pass CODE_SIGNING_ALLOWED=NO, so the
 # simulator build keeps the same entitlements as the device one.
@@ -64,7 +64,7 @@ xcodebuild \
     build \
     | grep -E "error:|BUILD" || true
 
-APP="$DERIVED/Build/Products/Debug-iphonesimulator/Cull.app"
+APP="$DERIVED/Build/Products/Debug-iphonesimulator/Rummage.app"
 [[ -d "$APP" ]] || fail "Build produced no app at $APP"
 
 step "Booting $SIMULATOR_NAME"
@@ -121,7 +121,7 @@ for index in range(count):
            + chunk(b"IHDR", struct.pack(">IIBBBBB", width, height, 8, 2, 0, 0, 0))
            + chunk(b"IDAT", zlib.compress(bytes(rows), 6))
            + chunk(b"IEND", b""))
-    with open(os.path.join(out, f"cull-sample-{index:03d}.png"), "wb") as handle:
+    with open(os.path.join(out, f"rummage-sample-{index:03d}.png"), "wb") as handle:
         handle.write(png)
 PY
     xcrun simctl addmedia "$UDID" "$GENERATED"/*.png
@@ -150,7 +150,7 @@ fi
 case "$PRIVACY" in
     grant)
         step "Granting photo access"
-        # Both services: Cull reads the library and deletes from it.
+        # Both services: Rummage reads the library and deletes from it.
         xcrun simctl privacy "$UDID" grant photos "$BUNDLE_ID" >/dev/null 2>&1 \
             || warn "Could not grant 'photos' — the app will ask on launch."
         xcrun simctl privacy "$UDID" grant photos-add "$BUNDLE_ID" >/dev/null 2>&1 || true

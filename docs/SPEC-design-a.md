@@ -1,11 +1,11 @@
-# Spec — Simplify Cull to Design A ("One Button")
+# Spec — Simplify Rummage to Design A ("One Button")
 
 Status: ready for agent
 Prototype: branch `prototype/simpler-app`, open `design/simple-prototype.html?variant=A`
 
 ## Problem Statement
 
-Cull makes you make decisions before it lets you do anything.
+Rummage makes you make decisions before it lets you do anything.
 
 Open the app and the home screen asks you to choose: a Continue card for the
 month you were last in, a Shuffle button, and a list of months — eight of them
@@ -51,7 +51,7 @@ system offers, without leaving the session.
 When the 50 are done, a summary says how many were deleted and how much space
 came back, and offers **Clean 50 more** or **Finish for today**.
 
-Everything that made Cull a browser of your library rather than a one-button
+Everything that made Rummage a browser of your library rather than a one-button
 cleaner is removed, and the documentation is rewritten to describe only this
 app.
 
@@ -110,7 +110,7 @@ app.
 
 **Settings and housekeeping**
 
-40. As a user, I want to see my lifetime photos culled and space freed, so that I can see the long-run payoff.
+40. As a user, I want to see my lifetime photos deleted and space freed, so that I can see the long-run payoff.
 41. As a user, I want to reset my review history, so that I can start over.
 42. As a user, I want to turn haptics off, so that the app is usable when I need it silent.
 43. As a user, I do not want settings for things the app no longer does, so that the settings screen stays short.
@@ -251,7 +251,7 @@ which method was called, or reach into view state, are not wanted.
   system delete prompt. These are verified by hand with the simulator loop.
 - **Prior art: none — these are the project's first tests.** The harness is
   already waiting for them: the test script and `make test` look for a
-  `CullTests` unit-test bundle and currently stop with instructions to create
+  `RummageTests` unit-test bundle and currently stop with instructions to create
   one, and `docs/WORKFLOW.md` already documents the loop. Creating that target
   is part of this work.
 

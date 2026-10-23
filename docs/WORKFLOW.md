@@ -1,4 +1,4 @@
-# Working on Cull
+# Working on Rummage
 
 Three loops, in the order you reach for them:
 
@@ -16,7 +16,7 @@ Every script has a `make` target with the same name — `make sim`, `make test`,
 PHOTOS=40`). This document spells out the scripts, since they are what the
 targets run and what the flags belong to.
 
-The Xcode project lives in `Cull/Cull.xcodeproj`; the repo root holds the
+The Xcode project lives in `Rummage/Rummage.xcodeproj`; the repo root holds the
 scripts, the docs and the design sources. The scripts know that, so they work
 from anywhere in the tree.
 
@@ -35,7 +35,7 @@ from anywhere in the tree.
    [developer.apple.com/account](https://developer.apple.com/account) has no
    pending Program License Agreement. Either one missing stops Apple issuing a
    provisioning profile, and the last line of the build failure is always the
-   unhelpful `No profiles for 'mirobehninger.Cull' were found` — the real reason
+   unhelpful `No profiles for 'mirobehninger.Rummage' were found` — the real reason
    is the line above it.
 
 3. **Your team.** The device build has to be signed by a team. The scripts take
@@ -81,7 +81,7 @@ scripts/sim.sh --grant             # skip the permission prompt
 scripts/sim.sh --console           # keep the log attached
 ```
 
-A fresh simulator has an empty photo library, and Cull with nothing to review
+A fresh simulator has an empty photo library, and Rummage with nothing to review
 says you are all caught up and nothing else — so `--photos N` generates N PNGs
 of varying size and colour and adds them with `simctl addmedia`. They are
 gradients, not photographs, which is enough for the swipe states, the progress
@@ -90,7 +90,7 @@ something truthful. Either way the images stay in the simulator's library until 
 so you only seed once.
 
 `--grant` and `--revoke` exist because the permission prompt is part of the
-product: Cull's first screen is about asking for the library, and the only way
+product: Rummage's first screen is about asking for the library, and the only way
 to see that screen twice is to put the simulator back to "not yet asked".
 
 The script reuses a booted simulator if there is one, and otherwise picks the
@@ -108,12 +108,12 @@ scripts/device.sh logs             # relaunch with the console attached
 scripts/device.sh files Library    # list what is in the app's container
 ```
 
-This is the loop that matters for Cull: the simulator can tell you whether a
+This is the loop that matters for Rummage: the simulator can tell you whether a
 screen lays out, but only your own library tells you whether a session of a
 thousand photos is actually pleasant, and only a real phone reports real
 storage freed.
 
-**Deleting is real here.** Cull removes photos through PhotoKit, so they land in
+**Deleting is real here.** Rummage removes photos through PhotoKit, so they land in
 **Recently Deleted** and stay recoverable for 30 days — but after 30 days they
 are gone, and a bug in a dev build deletes just as permanently as a shipped one.
 Test destructive changes in the simulator first.
@@ -121,10 +121,10 @@ Test destructive changes in the simulator first.
 ### Which iPhone it installs onto
 
 With one phone connected, nothing to decide. With two — a new phone and the old
-one still paired — `CULL_DEVICE` in `scripts/local.env` picks:
+one still paired — `RUMMAGE_DEVICE` in `scripts/local.env` picks:
 
 ```
-scripts/device.sh list        # the Identifier column is what goes in CULL_DEVICE
+scripts/device.sh list        # the Identifier column is what goes in RUMMAGE_DEVICE
 ```
 
 Use the **UDID** (`00008160-...`), not the name: a replacement phone restored
@@ -143,9 +143,9 @@ and installs keep landing on the older one that happens to be fully described.
 builds, and `--no-backup` skips that for the first install, when there is
 nothing to copy.
 
-What that container holds is small: Cull keeps the kept-photo marks, the
-lifetime culled count and the storage-freed total in `UserDefaults`, which on
-disk is `Library/Preferences/mirobehninger.Cull.plist`. `restore` puts exactly
+What that container holds is small: Rummage keeps the kept-photo marks, the
+lifetime deleted count and the storage-freed total in `UserDefaults`, which on
+disk is `Library/Preferences/mirobehninger.Rummage.plist`. `restore` puts exactly
 that directory back, after stopping the app so it cannot write its in-memory
 copy over the restore on the way out.
 
@@ -175,7 +175,7 @@ scripts/test.sh --filter SessionTests/undoTakesBackADeletion
 scripts/test.sh --clean
 ```
 
-The `CullTests` target holds one suite, `SessionTests`, and it drives the whole
+The `RummageTests` target holds one suite, `SessionTests`, and it drives the whole
 feature through `SessionViewModel`: a session is 50 photos (fewer when that is
 all that is left), keep and delete sort and advance, undo reverses a decision
 including the kept mark, completion lands exactly at the end of the batch,
@@ -196,7 +196,7 @@ share sheet and the delete prompt want a real phone.
 The simulator for a test run is resolved at run time rather than pinned, so the
 same command works on a laptop and on a CI runner with different runtimes
 installed. The scheme that `test` and `sim` use is shared
-(`Cull.xcodeproj/xcshareddata/xcschemes/Cull.xcscheme`), so a fresh clone gets
+(`Rummage.xcodeproj/xcshareddata/xcschemes/Rummage.xcscheme`), so a fresh clone gets
 the test action without opening Xcode first.
 
 ## When something breaks
@@ -211,8 +211,8 @@ Three failures that read as project problems but are not:
 |---|---|
 | `iOS NN.N is not installed` / no eligible destination | Xcode's SDK is newer than every installed runtime: `xcodebuild -downloadPlatform iOS` |
 | `needs to be unlocked to enable development services` | The phone is locked. Unlock it; nothing else is wrong. |
-| Installs land on the wrong phone | Two phones are paired. Set `CULL_DEVICE` to the right UDID (above). |
-| `No profiles for 'mirobehninger.Cull' were found` | No Apple ID in Xcode, or an unaccepted agreement. The real reason is the line above it. |
+| Installs land on the wrong phone | Two phones are paired. Set `RUMMAGE_DEVICE` to the right UDID (above). |
+| `No profiles for 'mirobehninger.Rummage' were found` | No Apple ID in Xcode, or an unaccepted agreement. The real reason is the line above it. |
 
 One more that is silent rather than loud: Xcode 27 replaced Simulator.app with
 DeviceHub.app, so a simulator can boot headlessly while the script reports
