@@ -68,7 +68,7 @@ struct SessionTests {
         await session.keep()
 
         #expect(session.marked == [first])
-        #expect(session.kept == [second])
+        #expect(history.isKept(second.id))
         #expect(session.position == 3)
     }
 
@@ -104,7 +104,6 @@ struct SessionTests {
         session.undo()
 
         #expect(session.current == photo)
-        #expect(session.kept.isEmpty)
         #expect(history.isKept(photo.id) == false)
         #expect(session.position == 1)
     }

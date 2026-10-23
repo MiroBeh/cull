@@ -58,11 +58,14 @@ class ReviewHistoryService: ObservableObject {
         Set(entries.keys.filter(isKept))
     }
 
+    /// Runs on every home refresh, so it only writes when something expired.
     func pruneExpired() {
         let moment = now()
+        let before = entries.count
         entries = entries.filter { _, keptAt in
             moment.timeIntervalSince(keptAt) < ttl
         }
+        guard entries.count != before else { return }
         persist()
         keptCount = entries.count
     }

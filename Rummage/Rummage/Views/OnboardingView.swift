@@ -2,38 +2,21 @@ import SwiftUI
 
 // MARK: - Icon Shapes
 
-struct StackIconBack: Shape {
-    func path(in rect: CGRect) -> Path {
-        let scale = min(rect.width, rect.height) / 80.0
-        var p = Path()
-        p.addRoundedRect(
-            in: CGRect(x: 14 * scale, y: 22 * scale, width: 40 * scale, height: 46 * scale),
-            cornerSize: CGSize(width: 5 * scale, height: 5 * scale)
-        )
-        return p
-    }
-}
+/// One card of the stack icon, placed on an 80×80 grid. The front card also
+/// carries the little picture: a sun and a mountain line.
+struct StackCard: Shape {
+    let x: CGFloat
+    let y: CGFloat
+    var showsPicture = false
 
-struct StackIconMid: Shape {
     func path(in rect: CGRect) -> Path {
         let scale = min(rect.width, rect.height) / 80.0
         var p = Path()
         p.addRoundedRect(
-            in: CGRect(x: 22 * scale, y: 16 * scale, width: 40 * scale, height: 46 * scale),
+            in: CGRect(x: x * scale, y: y * scale, width: 40 * scale, height: 46 * scale),
             cornerSize: CGSize(width: 5 * scale, height: 5 * scale)
         )
-        return p
-    }
-}
-
-struct StackIconFront: Shape {
-    func path(in rect: CGRect) -> Path {
-        let scale = min(rect.width, rect.height) / 80.0
-        var p = Path()
-        p.addRoundedRect(
-            in: CGRect(x: 30 * scale, y: 10 * scale, width: 40 * scale, height: 46 * scale),
-            cornerSize: CGSize(width: 5 * scale, height: 5 * scale)
-        )
+        guard showsPicture else { return p }
         let cr = 3.0 * scale
         p.addEllipse(in: CGRect(
             x: 42 * scale - cr, y: 24 * scale - cr,
@@ -102,13 +85,13 @@ private struct StackIconView: View {
     let size: CGFloat
     var body: some View {
         ZStack {
-            StackIconBack()
+            StackCard(x: 14, y: 22)
                 .stroke(RummageTheme.text, lineWidth: 1.4 * (size / 80))
                 .opacity(0.35)
-            StackIconMid()
+            StackCard(x: 22, y: 16)
                 .stroke(RummageTheme.text, lineWidth: 1.4 * (size / 80))
                 .opacity(0.6)
-            StackIconFront()
+            StackCard(x: 30, y: 10, showsPicture: true)
                 .stroke(
                     RummageTheme.text,
                     style: StrokeStyle(lineWidth: 1.4 * (size / 80), lineJoin: .round)

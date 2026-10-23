@@ -31,7 +31,6 @@ class SessionViewModel: ObservableObject {
 
     @Published private(set) var phase: Phase = .loading
     @Published private(set) var photos: [Photo] = []
-    @Published private(set) var kept: [Photo] = []
     @Published private(set) var marked: [Photo] = []
 
     /// Published because the progress line, the undo affordance and which
@@ -72,7 +71,6 @@ class SessionViewModel: ObservableObject {
     func start() async {
         phase = .loading
         photos = await source.sessionBatch(limit: Self.batchSize, excluding: history.keptIDs)
-        kept = []
         marked = []
         decisions = []
         phase = photos.isEmpty ? .finished(Summary()) : .reviewing
@@ -91,7 +89,6 @@ class SessionViewModel: ObservableObject {
         let photo = photos[decisions.count]
         switch decision {
         case .keep:
-            kept.removeAll { $0 == photo }
             history.unmarkKept(photo.id)
         case .delete:
             marked.removeAll { $0 == photo }
@@ -109,7 +106,6 @@ class SessionViewModel: ObservableObject {
         guard isReviewing, let photo = current else { return }
         switch decision {
         case .keep:
-            kept.append(photo)
             history.markKept(photo.id)
         case .delete:
             marked.append(photo)
