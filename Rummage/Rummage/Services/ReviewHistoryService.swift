@@ -52,6 +52,12 @@ class ReviewHistoryService: ObservableObject {
         return now().timeIntervalSince(keptAt) < ttl
     }
 
+    /// The photos left out of sessions right now, as a copy the library can
+    /// walk off the main thread.
+    var keptIDs: Set<String> {
+        Set(entries.keys.filter(isKept))
+    }
+
     func pruneExpired() {
         let moment = now()
         entries = entries.filter { _, keptAt in

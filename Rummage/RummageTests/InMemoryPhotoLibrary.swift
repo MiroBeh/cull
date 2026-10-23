@@ -31,21 +31,39 @@ final class InMemoryPhotoLibrary: PhotoSource {
 
     /// Unshuffled: which photos come back is the real service's business, and a
     /// test that depended on the order would be testing `shuffled()`.
-    func sessionBatch(limit: Int, history: ReviewHistoryService) async -> [Photo] {
-        Array(unreviewed(history: history).prefix(limit))
+    func sessionBatch(limit: Int, excluding keptIDs: Set<String>) async -> [Photo] {
+        Array(unreviewed(excluding: keptIDs).prefix(limit))
     }
 
-    func unreviewedCount(history: ReviewHistoryService) async -> Int {
-        unreviewed(history: history).count
+    func unreviewedCount(excluding keptIDs: Set<String>) async -> Int {
+        unreviewed(excluding: keptIDs).count
+    }
+
+    /// Set when the test needs the system delete prompt to stay up: `delete`
+    /// waits until the test calls `answerPrompt()`.
+    var holdsPrompt = false
+    private(set) var deleteCalls = 0
+    private var prompt: CheckedContinuation<Void, Never>?
+
+    var isPromptShowing: Bool { prompt != nil }
+
+    func answerPrompt() {
+        prompt?.resume()
+        prompt = nil
     }
 
     func delete(_ photos: [Photo]) async throws {
+        deleteCalls += 1
+        // Only one prompt is held, so a second call fails the test, not hangs it.
+        if holdsPrompt, prompt == nil {
+            await withCheckedContinuation { prompt = $0 }
+        }
         if refusesDeletion { throw Failure.declined }
         deleted.append(contentsOf: photos)
         self.photos.removeAll { photos.contains($0) }
     }
 
-    private func unreviewed(history: ReviewHistoryService) -> [Photo] {
-        photos.filter { !history.isKept($0.id) }
+    private func unreviewed(excluding keptIDs: Set<String>) -> [Photo] {
+        photos.filter { !keptIDs.contains($0.id) }
     }
 }

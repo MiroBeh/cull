@@ -25,24 +25,28 @@ class PhotoLibraryService: ObservableObject, PhotoSource {
 
     /// Walks a shuffled index list over a lazy fetch result, so picking 50
     /// photos out of a library of 40,000 never materialises the 40,000.
-    func sessionBatch(limit: Int, history: ReviewHistoryService) async -> [Photo] {
-        let result = fetchImages()
+    /// `@concurrent` because both walks touch every photo in the worst case,
+    /// and the app is main-actor by default.
+    @concurrent
+    nonisolated func sessionBatch(limit: Int, excluding keptIDs: Set<String>) async -> [Photo] {
+        let result = Self.fetchImages()
         guard result.count > 0, limit > 0 else { return [] }
 
         var photos: [Photo] = []
         for index in Array(0..<result.count).shuffled() {
             let asset = result.object(at: index)
-            guard !history.isKept(asset.localIdentifier) else { continue }
+            guard !keptIDs.contains(asset.localIdentifier) else { continue }
             photos.append(Photo(asset: asset))
             if photos.count >= limit { break }
         }
         return photos
     }
 
-    func unreviewedCount(history: ReviewHistoryService) async -> Int {
+    @concurrent
+    nonisolated func unreviewedCount(excluding keptIDs: Set<String>) async -> Int {
         var count = 0
-        fetchImages().enumerateObjects { asset, _, _ in
-            if !history.isKept(asset.localIdentifier) { count += 1 }
+        Self.fetchImages().enumerateObjects { asset, _, _ in
+            if !keptIDs.contains(asset.localIdentifier) { count += 1 }
         }
         return count
     }
@@ -97,7 +101,7 @@ class PhotoLibraryService: ObservableObject, PhotoSource {
         }
     }
 
-    private func fetchImages() -> PHFetchResult<PHAsset> {
+    private nonisolated static func fetchImages() -> PHFetchResult<PHAsset> {
         let options = PHFetchOptions()
         options.predicate = NSPredicate(format: "mediaType == %d", PHAssetMediaType.image.rawValue)
         return PHAsset.fetchAssets(with: options)

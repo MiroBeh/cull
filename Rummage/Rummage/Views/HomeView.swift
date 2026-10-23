@@ -157,6 +157,6 @@ struct HomeView: View {
             return
         }
         historyService.pruneExpired()
-        unreviewed = await photoService.unreviewedCount(history: historyService)
+        unreviewed = await photoService.unreviewedCount(excluding: historyService.keptIDs)
     }
 }

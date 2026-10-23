@@ -199,6 +199,37 @@ struct SessionTests {
         )))
     }
 
+    /// While iOS asks to confirm, a swipe still in flight or a second tap on
+    /// the exit must not change what was sent, or what the totals say went.
+    @Test func nothingCountsThatLandsWhileTheDeletePromptIsUp() async {
+        let history = makeHistory()
+        let (session, library) = await makeSession(photos: 10, history: history)
+        library.holdsPrompt = true
+        let doomed = [session.photos[0]]
+
+        await session.delete()
+        let ending = Task { await session.endEarly() }
+        while !library.isPromptShowing { await Task.yield() }
+
+        await session.delete()
+        await session.keep()
+        session.undo()
+        await session.endEarly()
+        library.answerPrompt()
+        await ending.value
+
+        #expect(library.deleteCalls == 1)
+        #expect(library.deleted == doomed)
+        #expect(history.photosDeleted == 1)
+        #expect(history.keptCount == 0)
+        #expect(session.phase == .finished(SessionViewModel.Summary(
+            reviewed: 1,
+            deleted: 1,
+            bytesFreed: StorageEstimate.bytes(for: doomed),
+            completedBatch: false
+        )))
+    }
+
     @Test func decliningTheSystemPromptLeavesTheLibraryAndTheCountersAlone() async {
         let history = makeHistory()
         let (session, library) = await makeSession(photos: 10, history: history)
