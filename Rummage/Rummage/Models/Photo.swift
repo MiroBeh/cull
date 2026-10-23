@@ -7,7 +7,7 @@ import Photos
 /// image and the share sheet can hand over the original, but none of the
 /// session logic touches it — which is what lets the tests build photos
 /// without PhotoKit.
-struct Photo: Identifiable, Hashable {
+nonisolated struct Photo: Identifiable, Hashable {
     let id: String
     let creationDate: Date?
     let pixelWidth: Int
