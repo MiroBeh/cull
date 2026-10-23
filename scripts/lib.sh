@@ -1,4 +1,4 @@
-# Shared plumbing for the Cull scripts. Sourced, never executed.
+# Shared plumbing for the Rummage scripts. Sourced, never executed.
 #
 # Everything machine-specific (team ID, which phone) is resolved here, so the
 # other scripts read as the workflow itself rather than as a pile of lookups.
@@ -7,16 +7,16 @@ set -euo pipefail
 
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 # The project sits one level down: the repo root holds scripts/, docs/ and the
-# design sources, and Cull/ is the Xcode project itself.
-PROJECT="$ROOT/Cull/Cull.xcodeproj"
-SCHEME="Cull"
-APP_TARGET="Cull"
-TEST_TARGET="CullTests"
-BUNDLE_ID="com.mirobehninger.cull"
+# design sources, and Rummage/ is the Xcode project itself.
+PROJECT="$ROOT/Rummage/Rummage.xcodeproj"
+SCHEME="Rummage"
+APP_TARGET="Rummage"
+TEST_TARGET="RummageTests"
+BUNDLE_ID="com.mirobehninger.rummage"
 BUILD_DIR="$ROOT/build"
 BACKUP_DIR="$ROOT/backups"
 
-# Machine-local settings, kept out of git: DEVELOPMENT_TEAM, CULL_DEVICE.
+# Machine-local settings, kept out of git: DEVELOPMENT_TEAM, RUMMAGE_DEVICE.
 LOCAL_ENV="$ROOT/scripts/local.env"
 # shellcheck disable=SC1090
 [[ -f "$LOCAL_ENV" ]] && source "$LOCAL_ENV"
@@ -34,7 +34,7 @@ warn() { printf '%s !! %s%s\n' "$YELLOW" "$*" "$RESET" >&2; }
 fail() { printf '%s !! %s%s\n' "$RED" "$*" "$RESET" >&2; exit 1; }
 ok()   { printf '%s ✓  %s%s\n' "$GREEN" "$*" "$RESET"; }
 
-# Whether the project has a unit-test target yet. Cull ships without one, and
+# Whether the project has a unit-test target yet. Rummage ships without one, and
 # `test` has to say that plainly rather than fail inside xcodebuild.
 has_test_target() {
     xcodebuild -list -project "$PROJECT" 2>/dev/null \
@@ -111,7 +111,7 @@ for block in pem.split(header)[1:]:
 '
 }
 
-# The iPhone to install onto: $CULL_DEVICE if set, otherwise the only connected
+# The iPhone to install onto: $RUMMAGE_DEVICE if set, otherwise the only connected
 # one. Prints the device identifier.
 resolve_device() {
     local json chosen
@@ -121,7 +121,7 @@ resolve_device() {
 
     # The exit status of this function has to be python's, not the cleanup's — a
     # caller asking "is a phone connected?" reads the exit code.
-    chosen="$(DEVICE_JSON="$json" WANTED="${CULL_DEVICE:-}" python3 - <<'PY'
+    chosen="$(DEVICE_JSON="$json" WANTED="${RUMMAGE_DEVICE:-}" python3 - <<'PY'
 import json, os, sys
 
 devices = json.load(open(os.environ["DEVICE_JSON"]))["result"]["devices"]
@@ -149,7 +149,7 @@ def usable(device):
     return (connection.get("tunnelState") != "unavailable"
             and connection.get("pairingState") == "paired")
 
-# CULL_DEVICE may name the phone or either of its two ids: `devicectl list
+# RUMMAGE_DEVICE may name the phone or either of its two ids: `devicectl list
 # devices` prints the hardware UDID in its Identifier column, while the JSON
 # "identifier" is a different uuid, and the one you can read is the one you
 # will paste.
@@ -172,7 +172,7 @@ if wanted:
         if wanted in identities(device):
             print(device["identifier"])
             sys.exit(0)
-    sys.exit(f"No iPhone matching CULL_DEVICE={wanted!r}. Seen: " +
+    sys.exit(f"No iPhone matching RUMMAGE_DEVICE={wanted!r}. Seen: " +
              (", ".join(f"{n} ({i})" for n, i in map(describe, phones)) or "none"))
 
 candidates = [d for d in phones if usable(d)]
@@ -182,7 +182,7 @@ if not candidates:
              f"Known iPhones: {seen}")
 if len(candidates) > 1:
     listed = ", ".join(f"{n} ({i})" for n, i in map(describe, candidates))
-    sys.exit("More than one iPhone connected; set CULL_DEVICE in scripts/local.env "
+    sys.exit("More than one iPhone connected; set RUMMAGE_DEVICE in scripts/local.env "
              f"to one of these UDIDs. Candidates: {listed}")
 print(candidates[0]["identifier"])
 PY

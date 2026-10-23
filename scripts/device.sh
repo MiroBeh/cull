@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 #
-# The loop for running Cull on your own iPhone, against your real photo library.
+# The loop for running Rummage on your own iPhone, against your real photo library.
 #
 #   scripts/device.sh install [--no-backup] [--no-launch] [--release]
 #   scripts/device.sh backup  [--source PATH]
@@ -14,9 +14,9 @@
 # What loses them is deleting the app, or signing the next build as a different
 # team. `install` therefore takes a backup first, unless told not to.
 #
-# Scope worth being clear about: these backups cover Cull's own state only. Your
+# Scope worth being clear about: these backups cover Rummage's own state only. Your
 # photos live in the system photo library, which nothing here copies — and which
-# Cull deletes from only through PhotoKit, so removed photos sit in Recently
+# Rummage deletes from only through PhotoKit, so removed photos sit in Recently
 # Deleted for 30 days.
 
 source "$(dirname "${BASH_SOURCE[0]}")/lib.sh"
@@ -37,7 +37,7 @@ import json, os
 processes = json.load(open(os.environ["PROC_JSON"]))["result"]["runningProcesses"]
 for process in processes:
     path = process.get("executable", "") or ""
-    if "/Cull.app/Cull" in path:
+    if "/Rummage.app/Rummage" in path:
         print(process["processIdentifier"])
         break
 '
@@ -96,8 +96,8 @@ do_restore() {
     local backup="${1:?restore needs a backup directory — see backups/}"
     [[ -d "$backup" ]] || fail "No such backup: $backup"
 
-    # Cull keeps everything it owns in UserDefaults — the kept-photo marks, the
-    # lifetime culled count, the storage-freed total — which on disk is
+    # Rummage keeps everything it owns in UserDefaults — the kept-photo marks, the
+    # lifetime deleted count, the storage-freed total — which on disk is
     # Library/Preferences/<bundle id>.plist inside the container. The container
     # copy lands under one directory per domain, so find that tree rather than
     # guess at the nesting.
@@ -108,7 +108,7 @@ do_restore() {
     local device
     device="$(resolve_device)"
 
-    warn "This replaces Cull's stored state on $(device_name "$device") with the copy in $backup."
+    warn "This replaces Rummage's stored state on $(device_name "$device") with the copy in $backup."
     note "Your photos are untouched either way — they are not in this backup."
     [[ -f "$backup/MANIFEST.txt" ]] && sed 's/^/    /' "$backup/MANIFEST.txt"
     printf 'Type "restore" to continue: '
@@ -179,7 +179,7 @@ do_install() {
         build \
         | grep -E "error:|warning: .*(deprecat|unused)|BUILD" || true
 
-    local app="$derived/Build/Products/$configuration-iphoneos/Cull.app"
+    local app="$derived/Build/Products/$configuration-iphoneos/Rummage.app"
     [[ -d "$app" ]] || fail "Build produced no app at $app"
 
     step "Installing (this is an update — the app's state stays)"
@@ -192,7 +192,7 @@ do_install() {
             || warn "Installed, but could not launch it from here. Tap the icon."
     fi
 
-    ok "Cull $configuration is on $(device_name "$device")"
+    ok "Rummage $configuration is on $(device_name "$device")"
     note "Signed with team $team. Keep that the same or iOS will refuse the update."
 }
 

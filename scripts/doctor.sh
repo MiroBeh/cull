@@ -49,7 +49,7 @@ else
 fi
 
 step "Photo access"
-# Cull is nothing without the photo library, and a missing usage description is
+# Rummage is nothing without the photo library, and a missing usage description is
 # not a build error: the app launches, asks for access, and iOS kills it the
 # instant it does. Checked against the build settings because the Info.plist is
 # generated from them (INFOPLIST_KEY_*), so there is no file to read.
@@ -105,9 +105,9 @@ if device="$(resolve_device 2>"$reason")"; then
     pass "$(device_name "$device") ($device)"
     if apps="$(xcrun devicectl device info apps --device "$device" --bundle-id "$BUNDLE_ID" 2>/dev/null)" \
         && grep -q "$BUNDLE_ID" <<<"$apps"; then
-        pass "Cull is installed — the next install is an update and keeps its state"
+        pass "Rummage is installed — the next install is an update and keeps its state"
     else
-        soft "Cull is not installed yet. First install: scripts/device.sh install --no-backup"
+        soft "Rummage is not installed yet. First install: scripts/device.sh install --no-backup"
     fi
 else
     soft "$(< "$reason")"

@@ -28,7 +28,7 @@ INSTALL_FLAGS := \
 .PHONY: help doctor sim test install backup restore logs files devices clean
 
 help: ## Show this list
-	@printf '\033[1mCull\033[0m — make <target> [VAR=value]\n\n'
+	@printf '\033[1mRummage\033[0m — make <target> [VAR=value]\n\n'
 	@awk 'BEGIN { FS = ":.*## " } /^[a-z][a-z-]*:.*## / \
 		{ printf "  \033[1m%-10s\033[0m %s\n", $$1, $$2 }' $(MAKEFILE_LIST)
 	@printf '\nDetail: docs/WORKFLOW.md\n'

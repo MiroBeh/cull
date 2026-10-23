@@ -1,0 +1,307 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>Cull — Rebrand options (PROTOTYPE)</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600;700&family=Geist+Mono:wght@400;500&display=swap" rel="stylesheet" />
+<!--
+  THROWAWAY PROTOTYPE — not app code.
+  Question: "Cull" collides with several apps doing the same job. What should
+  the app be called, what should its icon look like, and how should it be sold
+  on the App Store? Three directions, each leaning on a different half of the
+  product (rediscovery+sharing / storage / sharing-first), switchable via
+  ?variant=A|B|C and the floating bottom bar. Palette from CullTheme.swift.
+  App Store limits checked live: name 30, subtitle 30, promo 170, keywords 100.
+-->
+<style>
+  :root{
+    --bg:#1A1B1F; --surface:#25272A; --surface2:#2F3134; --line:#3D4044;
+    --text:#F4F3EF; --text2:#A7A9AD; --text3:#6B6D71;
+    --amber:#E3BF6F; --keep:#5FCF8A; --del:#E47668; --amberInk:#201B10;
+    --sans:"Geist","Inter",-apple-system,system-ui,sans-serif;
+    --mono:"Geist Mono",ui-monospace,"SF Mono",monospace;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:#101114;color:var(--text);font-family:var(--sans);-webkit-font-smoothing:antialiased}
+  header.page{padding:40px 32px 8px;max-width:1240px}
+  .kicker{font-family:var(--mono);font-size:11px;letter-spacing:.22em;text-transform:uppercase;color:var(--amber)}
+  header.page h1{margin:12px 0 0;font-size:28px;font-weight:600;letter-spacing:-.02em}
+  header.page .idea{margin:14px 0 0;max-width:68ch;font-size:15px;line-height:1.55;color:var(--text2)}
+  main{padding:24px 32px 160px;max-width:1320px}
+  section{margin-top:40px}
+  h2{font-family:var(--mono);font-size:11px;letter-spacing:.2em;text-transform:uppercase;color:var(--text3);font-weight:500;margin:0 0 16px}
+
+  /* identity */
+  .identity{display:grid;grid-template-columns:auto 1fr;gap:40px;align-items:center}
+  .icon-xl{width:220px;height:220px;border-radius:50px;overflow:hidden;box-shadow:0 30px 60px rgba(0,0,0,.5),0 0 0 1px rgba(255,255,255,.06)}
+  .icon-xl svg,.ic svg{display:block;width:100%;height:100%}
+  .wordmark{font-size:64px;font-weight:700;letter-spacing:-.04em;line-height:1}
+  .tagline{font-size:20px;color:var(--text2);margin:12px 0 0}
+  .why{font-size:15px;line-height:1.6;color:var(--text2);max-width:62ch;margin:18px 0 0}
+  .alts{display:flex;flex-wrap:wrap;gap:8px;margin-top:18px}
+  .alts span{font-size:13px;padding:6px 12px;border-radius:999px;background:var(--surface);border:1px solid var(--line);color:var(--text2)}
+  .alts span b{color:var(--text);font-weight:500}
+
+  /* icon contexts */
+  .contexts{display:flex;gap:24px;flex-wrap:wrap}
+  .ctx{border-radius:24px;padding:24px;display:flex;gap:22px;align-items:flex-end}
+  .ctx.dark{background:linear-gradient(160deg,#2b2f3a,#14161b)}
+  .ctx.light{background:linear-gradient(160deg,#dfe6ee,#b9c4d1)}
+  .app{display:flex;flex-direction:column;align-items:center;gap:6px;font-size:11px}
+  .ctx.dark .app{color:#fff}.ctx.light .app{color:#1b1d22}
+  .ic{border-radius:22.5%;overflow:hidden;box-shadow:0 2px 6px rgba(0,0,0,.25)}
+  .ghost-ic{border-radius:22.5%;opacity:.35}
+
+  /* store listing */
+  .store{display:grid;grid-template-columns:420px 1fr;gap:40px;align-items:start}
+  .listing{background:#fff;color:#1b1d22;border-radius:28px;padding:22px;box-shadow:0 30px 60px rgba(0,0,0,.4)}
+  .listing .top{display:flex;gap:16px;align-items:center}
+  .listing .ic{width:96px;height:96px;flex:0 0 auto}
+  .listing .nm{font-size:20px;font-weight:600;letter-spacing:-.01em}
+  .listing .st{font-size:14px;color:#6e6e73;margin-top:2px}
+  .listing .get{margin-top:10px;display:inline-block;background:#0a7aff;color:#fff;font-weight:600;font-size:14px;padding:5px 20px;border-radius:999px}
+  .listing .meta{display:flex;justify-content:space-between;border-top:1px solid #e5e5ea;border-bottom:1px solid #e5e5ea;margin:18px 0 0;padding:10px 0;font-size:11px;color:#8e8e93;text-align:center}
+  .listing .meta b{display:block;font-size:15px;color:#3a3a3c;margin-top:2px}
+  .shots{display:flex;gap:8px;margin-top:16px;overflow:hidden}
+  .shot{flex:0 0 120px;height:240px;border-radius:14px;padding:12px 10px;display:flex;flex-direction:column;gap:10px;overflow:hidden}
+  .shot .cap{font-size:13px;font-weight:700;line-height:1.15;letter-spacing:-.01em}
+  .mini{flex:1;border-radius:12px;background:var(--bg);padding:8px;display:flex;flex-direction:column;gap:6px;min-height:0}
+  .ph{position:relative;border-radius:8px;overflow:hidden;background:
+      repeating-linear-gradient(135deg,hsl(var(--h) 20% 36% / .5) 0 9px,hsl(var(--h) 20% 31% / .5) 9px 10px),
+      linear-gradient(150deg,hsl(var(--h) 24% 44%),hsl(var(--h) 26% 25%))}
+  .mbtn{height:16px;border-radius:5px;font-size:7px;font-weight:600;display:grid;place-items:center}
+  .mrow{display:flex;gap:4px}.mrow>*{flex:1}
+
+  /* metadata */
+  .fields{display:grid;gap:12px}
+  .field{background:var(--surface);border:1px solid var(--line);border-radius:16px;padding:14px 18px}
+  .field .lbl{display:flex;justify-content:space-between;font-family:var(--mono);font-size:10px;letter-spacing:.16em;text-transform:uppercase;color:var(--text3)}
+  .field .lbl .n.ok{color:var(--keep)}.field .lbl .n.over{color:var(--del)}
+  .field .val{font-size:15px;line-height:1.5;margin-top:6px}
+  .field.kw .val{font-family:var(--mono);font-size:13px;color:var(--text2);word-break:break-word}
+  .plan{display:grid;grid-template-columns:repeat(3,1fr);gap:16px}
+  .plan .field .val{color:var(--text2);font-size:14px}
+  .risk{border-color:rgba(228,118,104,.4)}
+
+  /* ── switcher (same as simple-prototype.html) ─────── */
+  #switcher{position:fixed;bottom:28px;left:50%;transform:translateX(-50%);z-index:999;
+    display:flex;align-items:center;gap:4px;padding:7px;border-radius:999px;
+    background:#F4F3EF;color:#15161A;box-shadow:0 12px 40px rgba(0,0,0,.5);font-family:var(--sans)}
+  #switcher button{width:40px;height:40px;border:0;border-radius:999px;background:transparent;font-size:17px;
+    color:#15161A;cursor:pointer;display:grid;place-items:center}
+  #switcher button:hover{background:rgba(0,0,0,.08)}
+  #switcher .lab{padding:0 16px;font-size:14px;font-weight:600;white-space:nowrap}
+  #switcher .lab em{font-family:var(--mono);font-style:normal;opacity:.5;margin-right:8px}
+  #switcher .keys{padding:0 14px 0 4px;font-size:11px;color:rgba(0,0,0,.4);white-space:nowrap}
+
+  @media (max-width:900px){
+    header.page,main{padding-left:16px;padding-right:16px}
+    .identity,.store,.plan{grid-template-columns:1fr}
+    .icon-xl{width:160px;height:160px;border-radius:36px}
+    .wordmark{font-size:44px}
+    .listing{max-width:420px}
+    #switcher .keys{display:none}
+  }
+</style>
+</head>
+<body>
+<header class="page">
+  <div class="kicker">Prototype · Rebrand · <span id="v-key"></span></div>
+  <h1 id="v-name"></h1>
+  <p class="idea" id="v-idea"></p>
+</header>
+<main id="stage"></main>
+
+<div id="switcher">
+  <button id="prev" aria-label="Previous option">←</button>
+  <span class="lab" id="lab"></span>
+  <button id="next" aria-label="Next option">→</button>
+  <span class="keys">← → keys</span>
+</div>
+
+<script>
+/* ── icons (1024-grid SVG, square — iOS applies the mask) ───────────── */
+const ICONS = {
+  // A — Rummage: a loose pile of prints, the top one pulled out and on its way.
+  A: `<svg viewBox="0 0 1024 1024"><defs><linearGradient id="ga" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#F0CF84"/><stop offset="1" stop-color="#D9A94F"/></linearGradient></defs>
+    <rect width="1024" height="1024" fill="url(#ga)"/>
+    <g transform="translate(512 560)">
+      <rect x="-250" y="-190" width="400" height="320" rx="34" fill="#C48F3A" transform="rotate(-14)"/>
+      <rect x="-210" y="-200" width="400" height="320" rx="34" fill="#F7F1E3" transform="rotate(6)"/>
+      <g transform="rotate(-6) translate(-40 -120)">
+        <rect x="-170" y="-150" width="420" height="330" rx="34" fill="#201B10"/>
+        <rect x="-140" y="-120" width="360" height="230" rx="16" fill="#E3BF6F"/>
+        <circle cx="140" cy="-60" r="32" fill="#F7F1E3"/>
+        <path d="M-140 110 L-40 0 L40 70 L110 20 L220 110 Z" fill="#C48F3A"/>
+      </g>
+      <g transform="translate(250 -280)"><circle r="92" fill="#201B10"/>
+        <path d="M-38 34 L40 -40 M-14 -40 H40 V14" stroke="#E3BF6F" stroke-width="26" stroke-linecap="round" stroke-linejoin="round" fill="none"/></g>
+    </g></svg>`,
+  // B — Roomy: a storage ring that is mostly empty — the room you got back.
+  B: `<svg viewBox="0 0 1024 1024"><rect width="1024" height="1024" fill="#1A1B1F"/>
+    <circle cx="512" cy="512" r="300" fill="none" stroke="#2F3134" stroke-width="92"/>
+    <circle cx="512" cy="512" r="300" fill="none" stroke="#5FCF8A" stroke-width="92" stroke-linecap="round"
+      stroke-dasharray="1885" stroke-dashoffset="1500" transform="rotate(-90 512 512)"/>
+    <rect x="402" y="432" width="220" height="170" rx="26" fill="none" stroke="#F4F3EF" stroke-width="30"/>
+    <path d="M420 590 L480 520 L530 565 L560 540 L606 590" fill="none" stroke="#F4F3EF" stroke-width="26" stroke-linejoin="round"/>
+    <circle cx="570" cy="480" r="20" fill="#F4F3EF"/></svg>`,
+  // C — Psst: a speech bubble that is also a photo.
+  C: `<svg viewBox="0 0 1024 1024"><defs><linearGradient id="gc" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#EE8B7D"/><stop offset="1" stop-color="#D55E50"/></linearGradient>
+      <clipPath id="cb"><rect x="212" y="232" width="600" height="470" rx="110"/></clipPath></defs>
+    <rect width="1024" height="1024" fill="url(#gc)"/>
+    <path d="M330 680 L300 830 L470 690 Z" fill="#F4F3EF"/>
+    <rect x="212" y="232" width="600" height="470" rx="110" fill="#F4F3EF"/>
+    <g clip-path="url(#cb)"><path d="M212 702 L420 470 L560 610 L650 530 L812 702 Z" fill="#E3BF6F"/></g>
+    <circle cx="660" cy="372" r="52" fill="#E47668"/>
+    <g fill="#F4F3EF"><circle cx="836" cy="200" r="26"/><circle cx="890" cy="140" r="16"/></g></svg>`,
+};
+const icon = (k, size) => `<div class="ic" style="width:${size}px;height:${size}px">${ICONS[k]}</div>`;
+const ghost = (c, size) => `<div class="ghost-ic" style="width:${size}px;height:${size}px;background:${c}"></div>`;
+
+/* ── mini review screen used inside store screenshots ───────────────── */
+const ph = (h, style='') => `<div class="ph" style="--h:${h};${style}"></div>`;
+const miniReview = (h, hint='') => `<div class="mini">
+  <div style="height:3px;border-radius:9px;background:linear-gradient(90deg,var(--text) 30%,var(--line) 30%)"></div>
+  ${ph(h,'flex:1')}${hint}
+  <div class="mrow"><div class="mbtn" style="background:rgba(228,118,104,.18);color:var(--del)">Delete</div>
+  <div class="mbtn" style="background:rgba(95,207,138,.18);color:var(--keep)">Keep</div></div></div>`;
+const miniHome = (num, unit, btn) => `<div class="mini" style="justify-content:center;gap:10px">
+  <div style="font-family:var(--mono);font-size:28px;color:var(--amber);letter-spacing:-.04em">${num}<span style="font-size:11px"> ${unit}</span></div>
+  <div style="font-size:8px;color:var(--text2);line-height:1.4">your photos could give back</div>
+  <div style="flex:1"></div><div class="mbtn" style="background:var(--amber);color:var(--amberInk);height:20px">${btn}</div></div>`;
+const miniShare = h => `<div class="mini">${ph(h,'flex:1')}
+  <div style="background:var(--surface2);border-radius:8px;padding:6px;display:flex;gap:5px;justify-content:space-around">
+    ${['#5FCF8A','#4C9BF0','#E3BF6F','#A7A9AD'].map(c=>`<i style="width:16px;height:16px;border-radius:50%;background:${c}"></i>`).join('')}</div></div>`;
+const shot = (bg, ink, cap, body) => `<div class="shot" style="background:${bg};color:${ink}"><div class="cap">${cap}</div>${body}</div>`;
+
+/* ── variants ───────────────────────────────────────────────────────── */
+const VARIANTS = [
+  { key:'A', name:'Rummage', color:'#E3BF6F',
+    tagline:'Clear out your camera roll. Find what\'s worth sending.',
+    idea:'Leans on both halves at once. "Rummaging" is exactly what a session is: digging through a random pile, throwing out junk, and every so often pulling out something good. Warm and curious rather than janitorial, and it sets Share up as the reward for doing the chore. Amber stays the brand colour, so the app itself barely changes.',
+    why:'The icon is a loose pile of prints with the top one pulled out and a send arrow — sorting and sharing in one picture. It reads at 60 px because it is three rectangles and a circle.',
+    alts:['Trove','Dig','Rifle'],
+    store:{ name:'Rummage: Photo Cleanup', subtitle:'Free up space. Share the gems.',
+      promo:'Fifty random photos, two minutes. Delete the clutter, keep what matters, and send the ones you forgot you had straight to a friend.',
+      keywords:'cleaner,storage,delete,camera roll,swipe,declutter,share,memories,random,free up space,gallery',
+      category:'Photo & Video',
+      shots:[['#E3BF6F','#201B10','50 random photos. Two minutes.',miniReview(28)],
+             ['#201B10','#E3BF6F','Swipe left to delete.',miniReview(200)],
+             ['#E3BF6F','#201B10','Found a gem? Send it.',miniShare(320)]] },
+    plan:[['Who it is for','People with 20,000 photos who feel guilty, not panicked. They will open it on the sofa, not in a storage emergency.'],
+          ['Lead message','"Rediscover, then declutter." First screenshot sells the random pile; storage is the proof, not the hook.'],
+          ['Launch angle','Seed a habit: "Rummage Sunday" push + share-sheet attribution ("found with Rummage") is optional and off by default.']],
+    risk:'Checked 2026-10-23. App Store (US/GB/DE): no photo app uses the name; "Rummage: Fridge to Dinner" (Food &amp; Drink) and "Rummage: Yard &amp; Estate Sales" (Lifestyle) exist, both with 0–1 ratings, so the full name must stay "Rummage: Photo Cleanup". USPTO: no live RUMMAGE mark in class 9 or 42 (the 2014 class-9 software mark was cancelled in 2022); nearest live class-9 mark is GRUMMAGE (sales/marketing app). EUIPO: no EU mark containing RUMMAGE. UK: live RUMMAGE4 (CoreLogic, classes 9/42, property data) and pending RUMAGE (2Hand Ltd, classes 35/42, second-hand marketplace). Low risk, but have a trademark attorney clear it before filing.' },
+
+  { key:'B', name:'Roomy', color:'#5FCF8A',
+    tagline:'Make room on your phone, fifty photos at a time.',
+    idea:'Storage-first and unashamedly practical. This is the name that wins the "iPhone storage full" search: the benefit is the brand. Sharing is the secondary line, not the hook. The icon swaps amber for the Keep green so the brand reads as relief, not as a warning.',
+    why:'A storage ring that is mostly empty, with a photo in the middle — the room you got back. It is the most legible of the three at small sizes, but also the most "utility" and the least distinctive among cleaner apps.',
+    alts:['Headroom','Spacious','Clearing'],
+    store:{ name:'Roomy: Free Up Photo Storage', subtitle:'Delete photos in two minutes',
+      promo:'See how much space your photos could give back, then clear them 50 at a time. Nothing goes until you confirm, and it stays recoverable for 30 days.',
+      keywords:'cleaner,space,delete,duplicate,camera roll,swipe,declutter,gallery,clean,share,random,iphone',
+      category:'Utilities',
+      shots:[['#1A1B1F','#5FCF8A','Get back 4.2 GB.',miniHome('4.2','GB','Start cleaning')],
+             ['#5FCF8A','#0F2418','One tap: delete or keep.',miniReview(150)],
+             ['#1A1B1F','#F4F3EF','Send the good ones on the way.',miniShare(40)]] },
+    plan:[['Who it is for','Someone who just saw "iPhone Storage Full" and wants it fixed now, without an AI cleaner subscription.'],
+          ['Lead message','The number. Every screenshot and the subtitle point at gigabytes freed and minutes spent.'],
+          ['Launch angle','Search ads on "storage full" / "photo cleaner"; differentiate on "no subscription, no AI, nothing deleted without iOS confirming".']],
+    risk:'Clearest search fit, but the most crowded shelf — dozens of near-identical "Photo Cleaner" listings. Quick search found no Roomy photo app; confirm in the App Store and trademark registers.' },
+
+  { key:'C', name:'Psst', color:'#E47668',
+    tagline:'Remember this? Send it — and clear the rest.',
+    idea:'Sharing-first. The pitch is "your camera roll is full of photos your friends have never seen", and freeing space is the side effect. That is a different shelf from every cleaner app, which makes it the boldest and most memorable option and the one most likely to spread by word of mouth — and the furthest from what the app looks like today.',
+    why:'A speech bubble that is also a photo, with the little "psst" dots off the corner. Coral (the Delete colour) becomes the brand colour, so the review screen would need its Delete red retuned.',
+    alts:['Throwback','Hey Look','Pass'],
+    store:{ name:'Psst — Rediscover & Declutter', subtitle:'Send old photos. Lose the rest',
+      promo:'Psst — remember this? Fifty random photos from your camera roll. Send the good ones to whoever is in them, delete the rest, get your storage back.',
+      keywords:'photo,share,friends,memories,throwback,cleaner,storage,delete,camera roll,swipe,random,send',
+      category:'Photo & Video',
+      shots:[['#E47668','#2A1412','Remember this?',miniReview(12)],
+             ['#F4F3EF','#2A1412','Send it to whoever\'s in it.',miniShare(250)],
+             ['#E47668','#2A1412','…and clear the rest.',miniHome('1.8','GB','Clean 50 more')]] },
+    plan:[['Who it is for','Group-chat people. They open it because something funny surfaced last time, not because storage is full.'],
+          ['Lead message','"Remember this?" The first screenshot is a photo, not a number; storage shows up last.'],
+          ['Launch angle','TikTok/Reels format: "I sent my friends 10 random photos from 2019". Weak on search, strong on virality.']],
+    risk:'A "Psst" anonymous-messaging app existed (circa 2014). Not a photo app, but check for a live trademark. Weakest App Store search fit of the three — the subtitle and keywords have to carry "cleaner".' },
+];
+
+/* ── render ─────────────────────────────────────────────────────────── */
+const LIMITS = {name:30, subtitle:30, promo:170, keywords:100};
+const field = (label, key, val, cls='') => {
+  const n = [...val].length, max = LIMITS[key];
+  return `<div class="field ${cls}"><div class="lbl"><span>${label}</span>${max?`<span class="n ${n<=max?'ok':'over'}">${n} / ${max}</span>`:''}</div><div class="val">${val}</div></div>`;
+};
+function page(v){
+  const s = v.store, others = VARIANTS.filter(o=>o!==v);
+  return `
+  <section class="identity">
+    <div class="icon-xl">${ICONS[v.key]}</div>
+    <div><div class="wordmark">${v.name}</div><p class="tagline">${v.tagline}</p>
+      <p class="why">${v.why}</p>
+      <div class="alts"><span><b>Also considered:</b></span>${v.alts.map(a=>`<span>${a}</span>`).join('')}</div></div>
+  </section>
+  <section><h2>Icon on the home screen</h2><div class="contexts">
+    <div class="ctx dark">${[ghost('#4C9BF0',60),ghost('#A7A9AD',60)].map(g=>`<div class="app">${g}<span>&nbsp;</span></div>`).join('')}
+      <div class="app">${icon(v.key,60)}<span>${v.name}</span></div><div class="app">${ghost("#5FCF8A",60)}<span>&nbsp;</span></div></div>
+    <div class="ctx light"><div class="app">${icon(v.key,60)}<span>${v.name}</span></div>
+      <div class="app">${icon(v.key,40)}<span>Spotlight</span></div><div class="app">${icon(v.key,29)}<span>Settings</span></div></div>
+  </div></section>
+  <section class="store">
+    <div><h2>App Store listing</h2><div class="listing">
+      <div class="top">${icon(v.key,96)}<div><div class="nm">${s.name}</div><div class="st">${s.subtitle}</div><span class="get">Get</span></div></div>
+      <div class="meta"><div>RATING<b>4+</b></div><div>CATEGORY<b>${s.category}</b></div><div>PRICE<b>Free</b></div><div>SIZE<b>4 MB</b></div></div>
+      <div class="shots">${s.shots.map(x=>shot(...x)).join('')}</div>
+    </div></div>
+    <div><h2>Metadata</h2><div class="fields">
+      ${field('App name','name',s.name)}${field('Subtitle','subtitle',s.subtitle)}
+      ${field('Promotional text','promo',s.promo)}${field('Keywords','keywords',s.keywords,'kw')}
+    </div></div>
+  </section>
+  <section><h2>How we promote it</h2><div class="plan">${v.plan.map(([l,t])=>`<div class="field"><div class="lbl"><span>${l}</span></div><div class="val">${t}</div></div>`).join('')}</div>
+    <div class="field risk" style="margin-top:16px"><div class="lbl"><span>Name check</span></div><div class="val" style="color:var(--text2);font-size:14px">${v.risk}</div></div></section>
+  <section><h2>Side by side</h2><div class="contexts"><div class="ctx dark">
+    ${[v,...others].map(o=>`<div class="app">${icon(o.key,o===v?72:56)}<span>${o.key} · ${o.name}</span></div>`).join('')}
+  </div></div></section>`;
+}
+
+/* ── switcher ───────────────────────────────────────────────────────── */
+const keys = VARIANTS.map(v=>v.key);
+const current = () => {
+  const k=(new URLSearchParams(location.search).get('variant')||'A').toUpperCase();
+  return keys.includes(k)?k:'A';
+};
+function render(){
+  const v = VARIANTS.find(x=>x.key===current());
+  document.getElementById('v-key').textContent = `?variant=${v.key}`;
+  document.getElementById('v-name').textContent = `${v.key} — ${v.name}`;
+  document.getElementById('v-idea').textContent = v.idea;
+  document.getElementById('lab').innerHTML = `<em>${v.key}</em>${v.name}`;
+  document.getElementById('stage').innerHTML = page(v);
+  document.title = `${v.name} — Rebrand option ${v.key} (PROTOTYPE)`;
+}
+function go(step){
+  const i = keys.indexOf(current());
+  const k = keys[(i+step+keys.length)%keys.length];
+  const u = new URL(location.href); u.searchParams.set('variant',k);
+  history.replaceState(null,'',u); render();
+}
+document.getElementById('prev').onclick = ()=>go(-1);
+document.getElementById('next').onclick = ()=>go(1);
+addEventListener('keydown', e=>{
+  const t=e.target;
+  if(t && (t.tagName==='INPUT'||t.tagName==='TEXTAREA'||t.isContentEditable)) return;
+  if(e.key==='ArrowLeft') go(-1);
+  if(e.key==='ArrowRight') go(1);
+});
+render();
+</script>
+</body>
+</html>

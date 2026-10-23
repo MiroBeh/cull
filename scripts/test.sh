@@ -9,7 +9,7 @@
 # pinned "iPhone 17, OS 26.5" is the single most common reason a green pipeline
 # turns red on someone else's machine.
 #
-# The CullTests bundle holds the session tests; if the target is ever missing,
+# The RummageTests bundle holds the session tests; if the target is ever missing,
 # this stops with a note rather than failing somewhere inside xcodebuild.
 
 source "$(dirname "${BASH_SOURCE[0]}")/lib.sh"
@@ -28,7 +28,7 @@ while [[ $# -gt 0 ]]; do
 done
 
 if ! has_test_target; then
-    warn "No $TEST_TARGET target in Cull.xcodeproj yet."
+    warn "No $TEST_TARGET target in Rummage.xcodeproj yet."
     info "Add one in Xcode: File ▸ New ▸ Target ▸ Unit Testing Bundle, named $TEST_TARGET."
     info "Then this script runs it unchanged, as does 'make test'."
     exit 1
