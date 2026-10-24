@@ -177,6 +177,9 @@ struct ReviewView: View {
         ZStack {
             if let photo = session.current {
                 PhotoCardView(photo: photo)
+                    // A fresh card per photo, so the last photo's image is not
+                    // shown while the next one loads.
+                    .id(photo.id)
                     .clipShape(RoundedRectangle(cornerRadius: 24))
                     .overlay(stamp)
                     .shadow(color: .black.opacity(abs(dragX) > 6 ? 0.5 : 0.3), radius: 28, y: 16)
